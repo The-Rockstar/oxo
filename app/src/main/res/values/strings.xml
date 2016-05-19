@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Haiti</string>
+    <string name="base_url">http://174.129.11.69/smaartsurvey/api/</string>
+    <string name="retry">please retry</string>
+    <string name="pleasewait">Please wait ...</string>
+    <string name="usernamehint">UserName</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="notactiviated">Not Activated</string>
+    <string name="activr">Active</string>
+    <string name="invaliduser">Invalid Username</string>
+    <string name="invalidpassword">Invalid Password</string>
+    <string name="invalid_userpass">Invalid Username or password</string>
+    <string name="success">Success</string>
+    <string name="finish">Finish</string>
+    <string name="press_again">press again</string>
+</resources>
