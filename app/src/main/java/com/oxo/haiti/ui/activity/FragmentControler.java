@@ -1,6 +1,7 @@
 package com.oxo.haiti.ui.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.PopupMenu;
@@ -167,6 +168,9 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         break;
                     case R.id.three:
                         ContentStorage.getInstance(FragmentControler.this).loggedIn(false);
+                        Intent intent = new Intent(FragmentControler.this, AuthActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
                         finish();
                         break;
                 }
