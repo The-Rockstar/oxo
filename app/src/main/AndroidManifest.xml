@@ -12,8 +12,12 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ui.activity.ControlActivity"></activity>
-        <activity android:name=".ui.activity.AuthActivity">
+        <activity
+            android:name=".ui.activity.ControlActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".ui.activity.AuthActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,7 +33,9 @@
 
         <service android:name=".service.SyncService" />
 
-        <activity android:name=".ui.activity.FragmentControler"></activity>
+        <activity
+            android:name=".ui.activity.FragmentControler"
+            android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>
