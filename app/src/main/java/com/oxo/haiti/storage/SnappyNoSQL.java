@@ -18,12 +18,12 @@ import java.util.List;
  * Created by wadali on 5/17/2016.
  */
 public class SnappyNoSQL {
+
     private static SnappyNoSQL instance;
     private DB snappyDB;
     private static final String ROW = "USER_X";
     private static final String SURVEY_ONE = "SURVEY_ONE";
     private static final String SURVEY_TWO = "SURVEY_TWO";
-
     private static final String SURVEY_DATA = "SURVEY_DATA";
 
 

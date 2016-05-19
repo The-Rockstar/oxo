@@ -82,12 +82,8 @@ public class DynamicFragment extends Fragment {
                 boolean isChecked = checkedRadioButton.isChecked();
                 // If the radiobutton that has changed in check state is now checked...
                 if (isChecked) {
-
-
                     if (questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt() != null)
                         showDialogMessage(questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt().toString());
-
-
                     // Changes the textview's text to "Checked: example radiobutton text"
                     //headerTextView.setText("Checked:" + checkedRadioButton.getText());
                     int radioPosition = (Integer) checkedRadioButton.getTag();

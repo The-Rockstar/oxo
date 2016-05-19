@@ -16,8 +16,8 @@ import java.util.List;
  */
 public class QuestionAdapter extends FragmentStatePagerAdapter  {
 
-    List<QuestionsModel> questionsModels;
-    CommonInterface commonInterface;
+    private List<QuestionsModel> questionsModels;
+    private CommonInterface commonInterface;
 
     public QuestionAdapter(FragmentManager fm, CommonInterface commonInterface, List<QuestionsModel> questionsModels) {
         super(fm);

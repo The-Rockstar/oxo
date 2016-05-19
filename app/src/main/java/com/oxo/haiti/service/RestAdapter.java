@@ -14,7 +14,7 @@ public class RestAdapter {
 
     private static RestAdapter restAdapter;
 
-    ApiService apiService;
+    private ApiService apiService;
 
     private RestAdapter(Context context) {
         Retrofit retrofit = new Retrofit.Builder()

@@ -14,4 +14,7 @@
     <string name="success">Success</string>
     <string name="finish">Finish</string>
     <string name="press_again">press again</string>
+    <string name="pause">Pause</string>
+    <string name="stop">Stop</string>
+    <string name="sign_out">Sign Out</string>
 </resources>

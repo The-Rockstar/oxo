@@ -16,7 +16,7 @@ public class Connectivity {
         try {
             Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
             int exitValue = ipProcess.waitFor();
-            return (exitValue == 0||isOnline(context));
+            return (exitValue == 0 || isOnline(context));
         } catch (IOException e) {
             e.printStackTrace();
             return isOnline(context);
