@@ -7,6 +7,9 @@ import android.content.SharedPreferences;
  * Created by jaswinderwadali on 5/16/2016.
  */
 public class ContentStorage {
+    private static final String SURVEY_ONE_POSITION = "SUR_ONE";
+    private static final String SURVEY_TWO_POSITION = "SUR_TWO";
+
     private static ContentStorage contentStorage;
     private static final String USER_PREF = "USER_PREF";
     private static final String LOGGED_IN = "LOGGED_IN";
@@ -48,5 +51,27 @@ public class ContentStorage {
         return sharedPreferences.getBoolean(LOGGED_IN, false);
     }
 
+
+    public void savePositionSurveyOne(int currentItem, int survey) {
+        switch (survey) {
+            case 0:
+                sharedPreferences.edit().putInt(SURVEY_ONE_POSITION, currentItem).apply();
+                break;
+            case 1:
+                sharedPreferences.edit().putInt(SURVEY_TWO_POSITION, currentItem).apply();
+                break;
+        }
+    }
+
+    public int getPositionSurveyOne(int currentItem) {
+        switch (currentItem) {
+            case 0:
+                return sharedPreferences.getInt(SURVEY_ONE_POSITION, 0);
+            case 1:
+                return sharedPreferences.getInt(SURVEY_TWO_POSITION, 0);
+            default:
+                return 0;
+        }
+    }
 
 }

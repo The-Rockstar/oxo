@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.oxo.haiti.R;
+import com.oxo.haiti.storage.ContentStorage;
+import com.oxo.haiti.storage.SnappyNoSQL;
 
 /**
  * Created by wadali on 5/17/2016.
@@ -67,4 +69,9 @@ public class BaseActivity extends AppCompatActivity {
         alert.show();
     }
 
+    protected void clearSaveState(boolean isOne) {
+        ContentStorage.getInstance(this).savePositionSurveyOne(0, isOne ? 0 : 1);
+        SnappyNoSQL.getInstance().removeSaveState(isOne);
+        SnappyNoSQL.getInstance().removeStack(isOne);
+    }
 }

@@ -17,4 +17,11 @@
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
     <string name="sign_out">Sign Out</string>
+    <string name="survey_one" >Survey One</string>
+    <string name="survey_two" >Survey Two</string>
+    <string name="new_hh">Nouvo kay la</string>
+    <string name="alreadystarted">Lis kay yo ou deja \n komansè men \n poko fini avek yo</string>
+
+
+
 </resources>

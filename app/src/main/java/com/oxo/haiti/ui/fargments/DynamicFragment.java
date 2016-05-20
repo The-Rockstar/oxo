@@ -1,5 +1,6 @@
 package com.oxo.haiti.ui.fargments;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -19,6 +20,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.oxo.haiti.R;
+import com.oxo.haiti.model.AnswerModel;
 import com.oxo.haiti.model.QuestionsModel;
 import com.oxo.haiti.utils.CommonInterface;
 
@@ -34,24 +36,56 @@ public class DynamicFragment extends Fragment {
     private CommonInterface commonInterface;
     private QuestionsModel questionsModel;
     private TextView questionDec;
+    private View view = null;
+    private AnswerModel answerModel;
+    AnswerModel.SuveryAnswer suveryAnswer = null;
 
-    public static DynamicFragment getFragment(int position, CommonInterface commonInterface, QuestionsModel questionsModel) {
+    public static DynamicFragment getFragment(int position, CommonInterface commonInterface, QuestionsModel questionsModel, AnswerModel answerModel) {
         DynamicFragment dynamicFragment = new DynamicFragment();
         dynamicFragment.position = position;
         dynamicFragment.commonInterface = commonInterface;
         dynamicFragment.questionsModel = questionsModel;
+        dynamicFragment.answerModel = answerModel;
         return dynamicFragment;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+    }
+
+//    @Override
+//    public void onHiddenChanged(boolean hidden) {
+//        if (!hidden) {
+//            Temp temp = (Temp) view.getTag();
+//            if (temp != null)
+//                commonInterface.getNextPosition(temp.getPosition(), temp.getQuestionsModels(), temp.getAnswer().toString(), temp.isNew());
+//        }
+//        super.onHiddenChanged(hidden);
+//
+//    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.dynamic_fragment, container, false);
+        view = inflater.inflate(R.layout.dynamic_fragment, container, false);
         headerTextView = (TextView) view.findViewById(R.id.header);
         answerContainer = (LinearLayout) view.findViewById(R.id.ans_container);
         questionDec = (TextView) view.findViewById(R.id.questionDec);
         headerTextView.setText(questionsModel.getQuestionText());
+
+        for (AnswerModel.SuveryAnswer suveryAnswer : answerModel.getSuveryAnswers()) {
+
+            if (suveryAnswer != null && questionDec != null && questionsModel.getQuestionId().equals(suveryAnswer.getQuestionId())) {
+                this.suveryAnswer = suveryAnswer;
+            }
+        }
+
         if (questionsModel.getQuestionType().equals("radio"))
             generateRadioButtonView();
         else
@@ -73,6 +107,11 @@ public class DynamicFragment extends Fragment {
             rb[i].setText(questionsModel.getAnswers().get(i).getOptionText());
             rb[i].setId(i + 100);
             rb[i].setTag(i);
+            if (suveryAnswer != null)
+                if (questionsModel.getAnswers().get(i).getOptionValue().equals(suveryAnswer.getAnswer())) {
+                    ((RadioButton) rg.getChildAt(i)).setChecked(true);
+                }
+
         }
         rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -87,7 +126,8 @@ public class DynamicFragment extends Fragment {
                     // Changes the textview's text to "Checked: example radiobutton text"
                     //headerTextView.setText("Checked:" + checkedRadioButton.getText());
                     int radioPosition = (Integer) checkedRadioButton.getTag();
-                    commonInterface.getNextPosition(questionsModel.getAnswers().get(radioPosition).getOptionNext() - 1, questionsModel, questionsModel.getAnswers().get(radioPosition).getOptionValue());
+                    commonInterface.getNextPosition(questionsModel.getAnswers().get(radioPosition).getOptionNext() - 1, questionsModel, questionsModel.getAnswers().get(radioPosition).getOptionValue(), true);
+
                 }
             }
         });
@@ -96,10 +136,12 @@ public class DynamicFragment extends Fragment {
 
 
     private void generateEt() {
-        View view = getLayoutInflater(getArguments()).inflate(R.layout.input_text, null);
+        final View view = getLayoutInflater(getArguments()).inflate(R.layout.input_text, null);
         EditText editText = (EditText) view.findViewById(R.id.text_et);
         if (questionsModel.getQuestionType().equals("number"))
             editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+        if (suveryAnswer != null)
+            editText.setText(suveryAnswer.getAnswer());
 
         editText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -109,8 +151,10 @@ public class DynamicFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > 0)
-                    commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, s.toString());
+                if (s.length() > 0) {
+                    commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, s.toString(), true);
+                    view.setTag(new Temp(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, s.toString(), true));
+                }
             }
 
             @Override
@@ -124,6 +168,10 @@ public class DynamicFragment extends Fragment {
     }
 
 
+    private void getAnswer() {
+
+    }
+
     protected void showDialogMessage(String message) {
         if (!TextUtils.isEmpty(message)) {
             AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
@@ -136,6 +184,52 @@ public class DynamicFragment extends Fragment {
                 }
             });
             alert.show();
+        }
+    }
+
+    public static class Temp {
+        int position;
+        QuestionsModel questionsModels;
+        String answer;
+        boolean isNew;
+
+        Temp(int position, QuestionsModel questionsModel, String answer, boolean isNew) {
+            this.position = position;
+            this.questionsModels = questionsModel;
+            this.answer = answer;
+            this.isNew = isNew;
+        }
+
+        public int getPosition() {
+            return position;
+        }
+
+        public void setPosition(int position) {
+            this.position = position;
+        }
+
+        public QuestionsModel getQuestionsModels() {
+            return questionsModels;
+        }
+
+        public void setQuestionsModels(QuestionsModel questionsModels) {
+            this.questionsModels = questionsModels;
+        }
+
+        public String getAnswer() {
+            return answer;
+        }
+
+        public void setAnswer(String answer) {
+            this.answer = answer;
+        }
+
+        public boolean isNew() {
+            return isNew;
+        }
+
+        public void setNew(boolean aNew) {
+            isNew = aNew;
         }
     }
 

@@ -3,6 +3,7 @@ package com.oxo.haiti.ui.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
@@ -42,27 +43,65 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     private AnswerModel.SuveryAnswer suveryAnswer;
     private AnswerModel answerModel;
     private Toolbar toolbar;
+    private boolean isOne = false;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fragment_controler);
-        answerModel = new AnswerModel();
-        answerModel.setSurveryPid(ContentStorage.getInstance(this).getUserID());
         if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
             questionsModelList = SnappyNoSQL.getInstance().getSurveyQuestionsOne();
-            answerModel.setSurveryId("1");
+            resumeSurvey("1", true);
+            setUpAdapter();
+            viewPager.setCurrentItem(ContentStorage.getInstance(this).getPositionSurveyOne(true ? 0 : 1));
+            isOne = true;
         } else {
             questionsModelList = SnappyNoSQL.getInstance().getSurveyQuestionsTwo();
-            answerModel.setSurveryId("2");
+            resumeSurvey("2", false);
+            setUpAdapter();
+            viewPager.setCurrentItem(ContentStorage.getInstance(this).getPositionSurveyOne(false ? 0 : 1));
+            isOne = false;
         }
-        setUpAdapter();
 
         findViewById(R.id.prev).setOnClickListener(this);
         findViewById(R.id.next).setOnClickListener(this);
         setUpToolbar();
     }
+
+    private void resumeSurvey(String surveyID, boolean isOne) {
+        if (getIntent().getExtras().getBoolean("RESUME")) {
+            answerModel = SnappyNoSQL.getInstance().getSaveState(isOne);
+            prevSteps = SnappyNoSQL.getInstance().getStack(isOne);
+            if (answerModel == null)
+                newObject(surveyID);
+            else
+                findViewById(R.id.prev).setVisibility(View.VISIBLE);
+        } else {
+            newObject(surveyID);
+        }
+    }
+
+    private void newObject(String surveyID) {
+        answerModel = new AnswerModel();
+        answerModel.setSurveryPid(ContentStorage.getInstance(this).getUserID());
+        answerModel.setSurveryId(surveyID);
+
+    }
+
+    private void pauseSurvey() {
+        if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
+            ContentStorage.getInstance(this).savePositionSurveyOne(viewPager.getCurrentItem(), 0);
+            SnappyNoSQL.getInstance().saveState(answerModel, true);
+            SnappyNoSQL.getInstance().saveStack(prevSteps, true);
+        } else {
+            ContentStorage.getInstance(this).savePositionSurveyOne(viewPager.getCurrentItem(), 1);
+            SnappyNoSQL.getInstance().saveState(answerModel, false);
+            SnappyNoSQL.getInstance().saveStack(prevSteps, false);
+
+        }
+    }
+
 
     private void setUpToolbar() {
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
@@ -73,12 +112,32 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
     private void setUpAdapter() {
         viewPager = (ViewPager) findViewById(R.id.main_container);
-        questionAdapter = new QuestionAdapter(getSupportFragmentManager(), this, questionsModelList);
+        questionAdapter = new QuestionAdapter(getSupportFragmentManager(), this, questionsModelList, answerModel);
         viewPager.setAdapter(questionAdapter);
         viewPager.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 return true;
+            }
+        });
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                for (AnswerModel.SuveryAnswer suveryAnswer : answerModel.getSuveryAnswers()) {
+                    if (suveryAnswer != null && questionsModelList.get(position) != null && questionsModelList.get(position).getQuestionId().equals(suveryAnswer.getQuestionId())) {
+                        getNextPosition(suveryAnswer.getNextId(), questionsModelList.get(position), suveryAnswer.getAnswer(), false);
+                    }
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
             }
         });
     }
@@ -94,8 +153,10 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.next:
                 if (questionAdapter.getCount() != nextPosition) {
-                    viewPager.setCurrentItem(nextPosition);
                     findViewById(R.id.next).setVisibility(View.GONE);
+                    findViewById(R.id.prev).setVisibility(View.VISIBLE);
+
+                    viewPager.setCurrentItem(nextPosition);
                     List<AnswerModel.SuveryAnswer> answers = answerModel.getSuveryAnswers();
                     if (!answers.contains(suveryAnswer)) {
                         answers.add(suveryAnswer);
@@ -105,6 +166,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     }
                 } else {
                     SyncData();
+                    super.clearSaveState(isOne);
                     findViewById(R.id.main_layout).setVisibility(View.GONE);
                     findViewById(R.id.finish_this).setVisibility(View.VISIBLE);
                     findViewById(R.id.finish_this).setOnClickListener(this);
@@ -113,8 +175,10 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             case R.id.prev:
                 if (!prevSteps.empty())
                     viewPager.setCurrentItem(prevSteps.pop());
-                else
+                else {
                     viewPager.setCurrentItem(0);
+                    findViewById(R.id.prev).setVisibility(View.GONE);
+                }
                 break;
             case R.id.finish_this:
                 finish();
@@ -124,6 +188,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 break;
         }
     }
+
 
     private void SyncData() {
         final String data = new Gson().toJson(answerModel);
@@ -160,13 +225,16 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.one:
-                        // TODO: 20/05/16 resume survey pause
+                        pauseSurvey();
+                        finish();
                         break;
                     case R.id.two:
+                        clearSaveState(isOne);
                         SyncData();
                         finish();
                         break;
                     case R.id.three:
+                        clearSaveState(isOne);
                         ContentStorage.getInstance(FragmentControler.this).loggedIn(false);
                         Intent intent = new Intent(FragmentControler.this, AuthActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -184,13 +252,17 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
 
     @Override
-    public void getNextPosition(int position, QuestionsModel questionsModel, String answer) {
+    public void getNextPosition(int position, QuestionsModel questionsModel, String answer, boolean isNew) {
         findViewById(R.id.next).setVisibility(View.VISIBLE);
         this.nextPosition = position;
-        suveryAnswer = new AnswerModel.SuveryAnswer();
-        suveryAnswer.setAnswer(answer);
-        suveryAnswer.setQuestionId(questionsModel.getQuestionId());
-        suveryAnswer.setQuestionKey(questionsModel.getQuestionKey());
+
+        if (isNew) {
+            suveryAnswer = new AnswerModel.SuveryAnswer();
+            suveryAnswer.setAnswer(answer);
+            suveryAnswer.setNextId(position);
+            suveryAnswer.setQuestionId(questionsModel.getQuestionId());
+            suveryAnswer.setQuestionKey(questionsModel.getQuestionKey());
+        }
     }
 
 }

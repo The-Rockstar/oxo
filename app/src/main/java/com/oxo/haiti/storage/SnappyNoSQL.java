@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 
 import com.google.gson.reflect.TypeToken;
+import com.oxo.haiti.model.AnswerModel;
 import com.oxo.haiti.model.QuestionsModel;
 import com.oxo.haiti.model.UsersModel;
 import com.snappydb.DB;
@@ -13,6 +14,7 @@ import com.snappydb.SnappydbException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Created by wadali on 5/17/2016.
@@ -25,6 +27,10 @@ public class SnappyNoSQL {
     private static final String SURVEY_ONE = "SURVEY_ONE";
     private static final String SURVEY_TWO = "SURVEY_TWO";
     private static final String SURVEY_DATA = "SURVEY_DATA";
+    private static final String SAVE_STATE_ONE = "SAVE_STATE_ONE";
+    private static final String SAVE_STATE_TWO = "SAVE_STATE_TWO";
+    private static final String SAVE_STACK_TWO = "SAVE_STACK_TWO";
+    private static final String SAVE_STACK_ONE = "SAVE_STACK_ONE";
 
 
     public static void init(Context context) {
@@ -126,7 +132,7 @@ public class SnappyNoSQL {
         return null;
     }
 
-    public void deleteAllUsers(Context context) {
+    public void deleteDataBase(Context context) {
         try {
             snappyDB.destroy();
             initInternal(context);
@@ -169,6 +175,63 @@ public class SnappyNoSQL {
         List<String> stringList = getSurveyData();
         stringList.remove(data);
         saveOfflineSurvey(stringList);
+    }
+
+
+    public void saveState(AnswerModel answerModel, boolean isOne) {
+        try {
+            snappyDB.put(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO, answerModel);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public AnswerModel getSaveState(boolean isOne) {
+        try {
+            if (snappyDB.exists(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO))
+                return snappyDB.get(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO, AnswerModel.class);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    public void removeSaveState(boolean isOne) {
+        try {
+            if (snappyDB.exists(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO))
+                snappyDB.del(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveStack(Stack<Integer> stack, boolean isOne) {
+        try {
+            snappyDB.put(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO, stack);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Stack<Integer> getStack(boolean isOne) {
+        try {
+            if (snappyDB.exists(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO))
+                return snappyDB.get(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO, Stack.class);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void removeStack(boolean isOne) {
+        try {
+            if (snappyDB.exists(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO))
+                snappyDB.del(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

@@ -31,11 +31,12 @@
             <TextView
                 android:id="@+id/prev"
                 android:layout_width="wrap_content"
+                android:textColor="@color/colorPrimary"
                 android:layout_height="wrap_content"
                 android:drawableLeft="@drawable/ic_fast_rewind_black_24dp"
                 android:gravity="center"
                 android:text="Prev"
-                android:visibility="visible" />
+                android:visibility="gone" />
 
             <View
                 android:layout_width="wrap_content"
@@ -43,8 +44,10 @@
                 android:layout_weight="1" />
 
             <TextView
+                android:visibility="gone"
                 android:id="@+id/next"
                 android:layout_width="wrap_content"
+                android:textColor="@color/colorPrimary"
                 android:layout_height="wrap_content"
                 android:drawableRight="@drawable/ic_fast_forward_black_50dp"
                 android:gravity="center"

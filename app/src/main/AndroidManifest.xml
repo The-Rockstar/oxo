@@ -13,6 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:name=".ui.activity.ControlActivity"
             android:screenOrientation="portrait"></activity>
         <activity

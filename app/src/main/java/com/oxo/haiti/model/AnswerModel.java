@@ -3,13 +3,14 @@ package com.oxo.haiti.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by jaswinderwadali on 19/05/16.
  */
-public class AnswerModel {
+public class AnswerModel implements Serializable{
 
     @SerializedName("survery_id")
     @Expose
@@ -20,6 +21,7 @@ public class AnswerModel {
     @SerializedName("suvery_answers")
     @Expose
     private List<SuveryAnswer> suveryAnswers = new ArrayList<>();
+
 
     /**
      * @return The surveryId
@@ -75,6 +77,25 @@ public class AnswerModel {
         @SerializedName("answer")
         @Expose
         private String answer;
+
+        @SerializedName("next_id")
+        @Expose
+        private int next_id = 0;
+
+        /**
+         * @return The nextid
+         */
+        public int getNextId() {
+            return next_id;
+        }
+
+        /**
+         * @param next_id The survery_id
+         */
+        public void setNextId(int next_id) {
+            this.next_id = next_id;
+        }
+
 
         /**
          * @return The questionId
