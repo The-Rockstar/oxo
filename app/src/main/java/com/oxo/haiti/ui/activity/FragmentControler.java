@@ -1,10 +1,12 @@
 package com.oxo.haiti.ui.activity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -66,6 +68,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
         findViewById(R.id.prev).setOnClickListener(this);
         findViewById(R.id.next).setOnClickListener(this);
+        findViewById(R.id.stop_survey).setOnClickListener(this);
         setUpToolbar();
     }
 
@@ -133,6 +136,9 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         getNextPosition(suveryAnswer.getNextId(), questionsModelList.get(position), suveryAnswer.getAnswer(), false);
                     }
                 }
+                if (questionsModelList.get(position).getQuestionType().equals("message")) {
+                    getNextPosition(questionsModelList.get(position).getAnswers().get(0).getOptionNext() - 1, questionsModelList.get(position), "READ", false);
+                }
             }
 
             @Override
@@ -151,11 +157,13 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
         switch (v.getId()) {
+            case R.id.stop_survey:
+                warning();
+                break;
             case R.id.next:
                 if (questionAdapter.getCount() != nextPosition) {
-                    findViewById(R.id.next).setVisibility(View.GONE);
+                    findViewById(R.id.next).setVisibility(View.INVISIBLE);
                     findViewById(R.id.prev).setVisibility(View.VISIBLE);
-
                     viewPager.setCurrentItem(nextPosition);
                     List<AnswerModel.SuveryAnswer> answers = answerModel.getSuveryAnswers();
                     if (!answers.contains(suveryAnswer)) {
@@ -165,11 +173,36 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         prevSteps.push(nextPosition);
                     }
                 } else {
-                    SyncData();
-                    super.clearSaveState(isOne);
-                    findViewById(R.id.main_layout).setVisibility(View.GONE);
-                    findViewById(R.id.finish_this).setVisibility(View.VISIBLE);
-                    findViewById(R.id.finish_this).setOnClickListener(this);
+                    new AsyncTask() {
+                        @Override
+                        protected Object doInBackground(Object[] params) {
+                            SyncData();
+                            clearSaveState(isOne);
+                            return null;
+                        }
+
+                        @Override
+                        protected void onPreExecute() {
+                            super.onPreExecute();
+                            showProgress();
+                        }
+
+                        @Override
+                        protected void onPostExecute(Object o) {
+                            super.onPostExecute(o);
+                            hideBar();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    findViewById(R.id.main_layout).setVisibility(View.GONE);
+                                    findViewById(R.id.finish_this).setVisibility(View.VISIBLE);
+                                    findViewById(R.id.finish_this).setOnClickListener(FragmentControler.this);
+
+                                }
+                            });
+
+                        }
+                    }.execute();
                 }
                 break;
             case R.id.prev:
@@ -177,7 +210,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     viewPager.setCurrentItem(prevSteps.pop());
                 else {
                     viewPager.setCurrentItem(0);
-                    findViewById(R.id.prev).setVisibility(View.GONE);
+                    findViewById(R.id.prev).setVisibility(View.INVISIBLE);
                 }
                 break;
             case R.id.finish_this:
@@ -229,9 +262,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         finish();
                         break;
                     case R.id.two:
-                        clearSaveState(isOne);
-                        SyncData();
-                        finish();
+                        warning();
                         break;
                     case R.id.three:
                         clearSaveState(isOne);
@@ -250,6 +281,12 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         popup.show();
     }
 
+    private void stopSurvey() {
+        clearSaveState(isOne);
+        SyncData();
+        finish();
+    }
+
 
     @Override
     public void getNextPosition(int position, QuestionsModel questionsModel, String answer, boolean isNew) {
@@ -265,4 +302,34 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    public void hideNext() {
+        findViewById(R.id.next).setVisibility(View.INVISIBLE);
+    }
+
+    @Override
+    public void hidePrev() {
+
+    }
+
+
+    private void warning() {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        stopSurvey();
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        dialog.dismiss();
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(getString(R.string.are_you_sure)).setPositiveButton(getString(R.string.yes), dialogClickListener)
+                .setNegativeButton(getString(R.string.no), dialogClickListener).show();
+    }
 }

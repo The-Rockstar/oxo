@@ -28,7 +28,5 @@ dependencies {
     compile 'com.snappydb:snappydb-lib:0.5.2'
     compile 'com.esotericsoftware.kryo:kryo:2.24.0'
     compile 'org.greenrobot:eventbus:3.0.0'
-
-
-
+    compile 'joda-time:joda-time:2.9.4'
 }

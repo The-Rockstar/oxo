@@ -31,27 +31,39 @@
             <TextView
                 android:id="@+id/prev"
                 android:layout_width="wrap_content"
-                android:textColor="@color/colorPrimary"
-                android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_fast_rewind_black_24dp"
-                android:gravity="center"
-                android:text="Prev"
-                android:visibility="gone" />
-
-            <View
-                android:layout_width="wrap_content"
                 android:layout_height="50dp"
-                android:layout_weight="1" />
+                android:background="@color/appColor"
+                android:drawableLeft="@drawable/back_50dp"
+                android:gravity="center"
+                android:padding="5dp"
+                android:text="@string/prev"
+                android:textColor="@android:color/white"
+                android:visibility="invisible" />
 
             <TextView
-                android:visibility="gone"
+                android:id="@+id/stop_survey"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_weight="1"
+                android:background="@color/orange"
+                android:padding="5dp"
+                android:gravity="center"
+                android:text="@string/stop_survey"
+                android:textColor="@android:color/white" />
+
+            <TextView
                 android:id="@+id/next"
                 android:layout_width="wrap_content"
-                android:textColor="@color/colorPrimary"
-                android:layout_height="wrap_content"
-                android:drawableRight="@drawable/ic_fast_forward_black_50dp"
+                android:layout_height="50dp"
+                android:background="@color/appColor"
+                android:drawableRight="@drawable/next_50dp"
                 android:gravity="center"
-                android:text="Next" />
+                android:padding="5dp"
+                android:text="@string/kontinye"
+                android:textColor="@android:color/white"
+                android:visibility="invisible" />
         </LinearLayout>
     </LinearLayout>
 

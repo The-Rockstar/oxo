@@ -104,6 +104,8 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
         if (status) {
             imageView.setImageResource(R.drawable.ic_done_all_50dp);
             textView.setText(getString(R.string.activr));
+            imageView.setVisibility(View.INVISIBLE);
+            textView.setVisibility(View.INVISIBLE);
         } else {
             imageView.setImageResource(R.drawable.ic_sync_problem_50dp);
             textView.setText(getString(R.string.notactiviated));

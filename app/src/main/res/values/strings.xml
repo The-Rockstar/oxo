@@ -3,9 +3,9 @@
     <string name="base_url">http://174.129.11.69/smaartsurvey/api/</string>
     <string name="retry">please retry</string>
     <string name="pleasewait">Please wait ...</string>
-    <string name="usernamehint">UserName</string>
-    <string name="password">Password</string>
-    <string name="login">Login</string>
+    <string name="usernamehint">Non itilizatè</string>
+    <string name="password">Modpas</string>
+    <string name="login">Konektè</string>
     <string name="notactiviated">Not Activated</string>
     <string name="activr">Active</string>
     <string name="invaliduser">Invalid Username</string>
@@ -14,14 +14,19 @@
     <string name="success">Success</string>
     <string name="finish">Finish</string>
     <string name="press_again">press again</string>
-    <string name="pause">Pause</string>
-    <string name="stop">Stop</string>
-    <string name="sign_out">Sign Out</string>
-    <string name="survey_one" >Survey One</string>
-    <string name="survey_two" >Survey Two</string>
+    <string name="pause">Pòz</string>
+    <string name="stop">Kanpe ankèt la</string>
+    <string name="sign_out">Dekonekte</string>
+    <string name="survey_one" >Kay</string>
+    <string name="survey_two" >moun</string>
     <string name="new_hh">Nouvo kay la</string>
     <string name="alreadystarted">Lis kay yo ou deja \n komansè men \n poko fini avek yo</string>
-
+    <string name="kontinye">Kontinye</string>
+    <string name="prev">Retounen</string>
+    <string name="yes">Wi</string>
+    <string name="no">non</string>
+    <string name="stop_survey">Kanpe ankèt la</string>
+    <string name="are_you_sure">Eske ou si ouvle kanpe ankèt la?</string>
 
 
 </resources>

@@ -52,7 +52,7 @@ public class BaseActivity extends AppCompatActivity {
             progressDialog.dismiss();
     }
 
-    protected void messageToast(String message) {
+    public void messageToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
