@@ -2,7 +2,6 @@ package com.oxo.haiti.ui.fargments;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -32,7 +31,6 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -93,6 +91,8 @@ public class DynamicFragment extends Fragment {
             checkBox_radio();
         else if (questionsModel.getQuestionType().equals("input_radio"))
             input_radio();
+        else if (questionsModel.getQuestionType().equals("text_text"))
+            dynamicTextInput();
         else
             generateEt();
 
@@ -100,6 +100,12 @@ public class DynamicFragment extends Fragment {
         if (!TextUtils.isEmpty(questionsModel.getQuestionDesc()))
             questionDec.setText(Html.fromHtml(questionsModel.getQuestionDesc()));
         return view;
+    }
+
+    private void dynamicTextInput() {
+        for (int i = 0; i < questionsModel.getAnswers().size(); i++) {
+            generateEt(questionsModel.getAnswers().get(i).getMax(), questionsModel.getAnswers().get(i).getMin());
+        }
     }
 
     void insertDate() {
@@ -195,6 +201,52 @@ public class DynamicFragment extends Fragment {
     }
 
 
+    private void generateEt(final int min, final int max) {
+        editTextInflatedView = (LinearLayout) getLayoutInflater(getArguments()).inflate(R.layout.input_text, null);
+        EditText editText = (EditText) editTextInflatedView.findViewById(R.id.text_et);
+        if (questionsModel.getQuestionType().equals("number")) {
+            editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+            UPPER_LIMIT = questionsModel.getMax();
+            LOWER_LIMIT = questionsModel.getMin();
+        }
+        if (suveryAnswer != null)
+            editText.setText(suveryAnswer.getAnswer());
+
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0) {
+                    if (questionsModel.getQuestionType().equals("number")) {
+                        if (max < Integer.parseInt(s.toString()) || Integer.parseInt(s.toString()) < min) {
+                            commonInterface.hideNext();
+                            BaseActivity baseActivity = (BaseActivity) getActivity();
+                            baseActivity.messageToast("Antre yon nimewo/kantite antre " + max + " a " + min + ".");
+                        } else {
+                            commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, s.toString(), true);
+                        }
+                    } else
+                        commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, s.toString(), true);
+//                    view.setTag(new Temp(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, s.toString(), true));
+                } else
+                    commonInterface.hideNext();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+
+            }
+        });
+        answerContainer.addView(editTextInflatedView);
+
+    }
+
+
     private void checkBoxInput() {
         checkBoxAnswers = new ArrayList<>();
         checkboxlist = new ConcurrentHashMap<>();
@@ -204,7 +256,7 @@ public class DynamicFragment extends Fragment {
             final CheckBox checkBox = new CheckBox(getContext());
             checkBox.setId(130 + i);
             checkBox.setTag(questionsModel.getAnswers().get(i).getOptionValue());
-            checkBox.setTag(R.string.success,i);
+            checkBox.setTag(R.string.success, i);
             checkBox.setText(Html.fromHtml(questionsModel.getAnswers().get(i).getOptionText()));
             answerContainer.addView(checkBox);
 

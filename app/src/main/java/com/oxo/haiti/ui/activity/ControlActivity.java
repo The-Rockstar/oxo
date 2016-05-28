@@ -1,11 +1,14 @@
 package com.oxo.haiti.ui.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.oxo.haiti.R;
@@ -17,6 +20,9 @@ import com.oxo.haiti.ui.base.BaseActivity;
 import com.oxo.haiti.utils.ExpandableLayout;
 
 import java.security.PrivateKey;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -27,6 +33,8 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
      * Created by jaswinderwadali on 5/16/2016.
      */
     private Toolbar toolbar;
+    private List<String> sOneKeys = new ArrayList<>();
+    private List<String> sTwoKeys = new ArrayList<>();
 
 
     @Override
@@ -45,6 +53,7 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
     @Override
     protected void onResume() {
         super.onResume();
+        problemSolver();
         layoutManager();
     }
 
@@ -68,7 +77,7 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
         expandableLayoutTwo.findViewById(R.id.resume_survey).setOnClickListener(resumeSurvey);
 
 
-        if (SnappyNoSQL.getInstance().getSaveState(true) != null) {
+        if (sOneKeys.size() > 0) {
             expandableLayoutOne.findViewById(R.id.resume_survey).setVisibility(View.VISIBLE);
         } else {
             expandableLayoutOne.findViewById(R.id.resume_survey).setVisibility(View.GONE);
@@ -76,7 +85,7 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
         }
 
 
-        if (SnappyNoSQL.getInstance().getSaveState(false) != null) {
+        if (sTwoKeys.size() > 0) {
             expandableLayoutTwo.findViewById(R.id.resume_survey).setVisibility(View.VISIBLE);
         } else {
             expandableLayoutTwo.findViewById(R.id.resume_survey).setVisibility(View.GONE);
@@ -102,35 +111,43 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
             switch ((int) v.getTag()) {
                 case 0:
                     intent.putExtra("SURVEY", "ONE");
-                    if (SnappyNoSQL.getInstance().getSaveState(true) != null)
-                        intent.putExtra("RESUME", true);
+                    alertBuilder(sOneKeys);
+                    intent.putExtra("RESUME", true);
 
                     break;
                 case 1:
                     intent.putExtra("SURVEY", "TWO");
-                    if (SnappyNoSQL.getInstance().getSaveState(false) != null)
-                        intent.putExtra("RESUME", true);
+                    alertBuilder(sTwoKeys);
+                    intent.putExtra("RESUME", true);
                     break;
             }
-            startActivity(intent);
-
-
+//            startActivity(intent);
         }
     };
 
 
-    View.OnClickListener newSurvey = new View.OnClickListener() {
+    private void problemSolver() {
+        List<String> keys = SnappyNoSQL.getInstance().getKeys();
+        for (String key : keys) {
+            if (key.contains("ONE"))
+                sOneKeys.add(key);
+            else
+                sTwoKeys.add(key);
+        }
+    }
+
+    private View.OnClickListener newSurvey = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             Intent intent = new Intent(ControlActivity.this, FragmentControler.class);
             intent.putExtra("RESUME", false);
             switch ((int) v.getTag()) {
                 case 0:
-                    clearSaveState(true);
+                    intent.putExtra("key", "ONE" + new Random(100));
                     intent.putExtra("SURVEY", "ONE");
                     break;
                 case 1:
-                    clearSaveState(false);
+                    intent.putExtra("key", "TWO" + new Random(100));
                     intent.putExtra("SURVEY", "TWO");
                     break;
             }
@@ -151,8 +168,6 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
         //registering popup with OnMenuItemClickListener
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem item) {
-                clearSaveState(true);
-                clearSaveState(false);
                 ContentStorage.getInstance(ControlActivity.this).loggedIn(false);
                 Intent intent = new Intent(ControlActivity.this, AuthActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -163,4 +178,35 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
         });
         popup.show();
     }
+
+
+    private void alertBuilder(List<String> list) {
+        AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
+        builderSingle.setTitle("Select One Name:-");
+
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.select_dialog_singlechoice);
+        arrayAdapter.addAll(list);
+
+        builderSingle.setNegativeButton(
+                "cancel",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+        builderSingle.setAdapter(
+                arrayAdapter,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String strName = arrayAdapter.getItem(which);
+                        dialog.dismiss();
+                    }
+                });
+        builderSingle.show();
+    }
+
 }

@@ -45,25 +45,25 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     private AnswerModel.SuveryAnswer suveryAnswer;
     private AnswerModel answerModel;
     private Toolbar toolbar;
-    private boolean isOne = false;
+    private String key = null;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fragment_controler);
+        key = getIntent().getStringExtra("key");
+
         if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
             questionsModelList = SnappyNoSQL.getInstance().getSurveyQuestionsOne();
-            resumeSurvey("1", true);
+            resumeSurvey("1", key);
             setUpAdapter();
-            viewPager.setCurrentItem(ContentStorage.getInstance(this).getPositionSurveyOne(true ? 0 : 1));
-            isOne = true;
+            viewPager.setCurrentItem(ContentStorage.getInstance(this).getPositionSurveyOne(key));
         } else {
             questionsModelList = SnappyNoSQL.getInstance().getSurveyQuestionsTwo();
-            resumeSurvey("2", false);
+            resumeSurvey("2", key);
             setUpAdapter();
-            viewPager.setCurrentItem(ContentStorage.getInstance(this).getPositionSurveyOne(false ? 0 : 1));
-            isOne = false;
+            viewPager.setCurrentItem(ContentStorage.getInstance(this).getPositionSurveyOne(key));
         }
 
         findViewById(R.id.prev).setOnClickListener(this);
@@ -72,7 +72,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         setUpToolbar();
     }
 
-    private void resumeSurvey(String surveyID, boolean isOne) {
+    private void resumeSurvey(String surveyID, String isOne) {
         if (getIntent().getExtras().getBoolean("RESUME")) {
             answerModel = SnappyNoSQL.getInstance().getSaveState(isOne);
             prevSteps = SnappyNoSQL.getInstance().getStack(isOne);
@@ -94,13 +94,13 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
     private void pauseSurvey() {
         if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
-            ContentStorage.getInstance(this).savePositionSurveyOne(viewPager.getCurrentItem(), 0);
-            SnappyNoSQL.getInstance().saveState(answerModel, true);
-            SnappyNoSQL.getInstance().saveStack(prevSteps, true);
+            ContentStorage.getInstance(this).savePositionSurveyOne(viewPager.getCurrentItem(), key);
+            SnappyNoSQL.getInstance().saveState(answerModel, key);
+            SnappyNoSQL.getInstance().saveStack(prevSteps, key);
         } else {
-            ContentStorage.getInstance(this).savePositionSurveyOne(viewPager.getCurrentItem(), 1);
-            SnappyNoSQL.getInstance().saveState(answerModel, false);
-            SnappyNoSQL.getInstance().saveStack(prevSteps, false);
+            ContentStorage.getInstance(this).savePositionSurveyOne(viewPager.getCurrentItem(), key);
+            SnappyNoSQL.getInstance().saveState(answerModel, key);
+            SnappyNoSQL.getInstance().saveStack(prevSteps, key);
 
         }
     }
@@ -177,7 +177,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         @Override
                         protected Object doInBackground(Object[] params) {
                             SyncData();
-                            clearSaveState(isOne);
+                            clearSaveState(key);
                             return null;
                         }
 
@@ -265,7 +265,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         warning();
                         break;
                     case R.id.three:
-                        clearSaveState(isOne);
+                        clearSaveState(key);
                         ContentStorage.getInstance(FragmentControler.this).loggedIn(false);
                         Intent intent = new Intent(FragmentControler.this, AuthActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -282,7 +282,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     }
 
     private void stopSurvey() {
-        clearSaveState(isOne);
+        clearSaveState(key);
         SyncData();
         finish();
     }

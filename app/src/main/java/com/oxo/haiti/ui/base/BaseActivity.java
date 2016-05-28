@@ -63,15 +63,15 @@ public class BaseActivity extends AppCompatActivity {
         alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-//                finish();
+                    //finish();
             }
         });
         alert.show();
     }
 
-    protected void clearSaveState(boolean isOne) {
-        ContentStorage.getInstance(this).savePositionSurveyOne(0, isOne ? 0 : 1);
-        SnappyNoSQL.getInstance().removeSaveState(isOne);
-        SnappyNoSQL.getInstance().removeStack(isOne);
+    protected void clearSaveState(String key) {
+        ContentStorage.getInstance(this).savePositionSurveyOne(0, key);
+        SnappyNoSQL.getInstance().removeSaveState(key);
+        SnappyNoSQL.getInstance().removeStack(key);
     }
 }

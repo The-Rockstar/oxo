@@ -27,10 +27,7 @@ public class SnappyNoSQL {
     private static final String SURVEY_ONE = "SURVEY_ONE";
     private static final String SURVEY_TWO = "SURVEY_TWO";
     private static final String SURVEY_DATA = "SURVEY_DATA";
-    private static final String SAVE_STATE_ONE = "SAVE_STATE_ONE";
-    private static final String SAVE_STATE_TWO = "SAVE_STATE_TWO";
-    private static final String SAVE_STACK_TWO = "SAVE_STACK_TWO";
-    private static final String SAVE_STACK_ONE = "SAVE_STACK_ONE";
+    private static final String KEYSTORE = "KEYSTORE";
 
 
     public static void init(Context context) {
@@ -178,18 +175,79 @@ public class SnappyNoSQL {
     }
 
 
-    public void saveState(AnswerModel answerModel, boolean isOne) {
+//    public void saveState(AnswerModel answerModel, boolean isOne) {
+//        try {
+//            snappyDB.put(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO, answerModel);
+//        } catch (SnappydbException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public AnswerModel getSaveState(boolean isOne) {
+//        try {
+//            if (snappyDB.exists(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO))
+//                return snappyDB.get(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO, AnswerModel.class);
+//        } catch (SnappydbException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+//
+//
+//    public void removeSaveState(boolean isOne) {
+//        try {
+//            if (snappyDB.exists(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO))
+//                snappyDB.del(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO);
+//        } catch (SnappydbException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public void saveStack(Stack<Integer> stack, boolean isOne) {
+//        try {
+//            snappyDB.put(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO, stack);
+//        } catch (SnappydbException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public Stack<Integer> getStack(boolean isOne) {
+//        try {
+//            if (snappyDB.exists(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO))
+//                return snappyDB.get(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO, Stack.class);
+//        } catch (SnappydbException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+//
+//    public void removeStack(boolean isOne) {
+//        try {
+//            if (snappyDB.exists(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO))
+//                snappyDB.del(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO);
+//        } catch (SnappydbException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+
+    // key value pair
+
+
+    public void saveState(AnswerModel answerModel, String key) {
         try {
-            snappyDB.put(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO, answerModel);
+            snappyDB.put(key, answerModel);
         } catch (SnappydbException e) {
             e.printStackTrace();
+        } finally {
+            storeKey(key);
         }
     }
 
-    public AnswerModel getSaveState(boolean isOne) {
+    public AnswerModel getSaveState(String key) {
         try {
-            if (snappyDB.exists(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO))
-                return snappyDB.get(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO, AnswerModel.class);
+            if (snappyDB.exists(key))
+                return snappyDB.get(key, AnswerModel.class);
         } catch (SnappydbException e) {
             e.printStackTrace();
         }
@@ -197,41 +255,75 @@ public class SnappyNoSQL {
     }
 
 
-    public void removeSaveState(boolean isOne) {
+    public void removeSaveState(String key) {
         try {
-            if (snappyDB.exists(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO))
-                snappyDB.del(isOne ? SAVE_STATE_ONE : SAVE_STATE_TWO);
+            if (snappyDB.exists(key))
+                snappyDB.del(key);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }finally {
+            removeKey(key);
+        }
+    }
+
+
+    public void saveStack(Stack<Integer> stack, String key) {
+        try {
+            snappyDB.put(key, stack);
         } catch (SnappydbException e) {
             e.printStackTrace();
         }
     }
 
-    public void saveStack(Stack<Integer> stack, boolean isOne) {
+    public Stack<Integer> getStack(String key) {
         try {
-            snappyDB.put(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO, stack);
-        } catch (SnappydbException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public Stack<Integer> getStack(boolean isOne) {
-        try {
-            if (snappyDB.exists(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO))
-                return snappyDB.get(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO, Stack.class);
+            if (snappyDB.exists(key))
+                return snappyDB.get(key, Stack.class);
         } catch (SnappydbException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public void removeStack(boolean isOne) {
+    public void removeStack(String key) {
         try {
-            if (snappyDB.exists(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO))
-                snappyDB.del(isOne ? SAVE_STACK_ONE : SAVE_STACK_TWO);
+            if (snappyDB.exists(key))
+                snappyDB.del(key);
         } catch (SnappydbException e) {
             e.printStackTrace();
         }
-
     }
 
+
+    private void storeKey(String key) {
+        try {
+            List<String> keys = getKeys();
+            keys.add(key);
+            snappyDB.put(KEYSTORE, keys);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void removeKey(String key) {
+        try {
+            if (snappyDB.exists(KEYSTORE)) {
+                List<String> keys = getKeys();
+                keys.remove(key);
+                snappyDB.put(KEYSTORE, keys);
+            }
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<String> getKeys() {
+        try {
+            if (snappyDB.exists(KEYSTORE))
+                return snappyDB.get(KEYSTORE, ArrayList.class);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
 }

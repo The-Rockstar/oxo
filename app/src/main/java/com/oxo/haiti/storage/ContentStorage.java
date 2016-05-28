@@ -52,26 +52,13 @@ public class ContentStorage {
     }
 
 
-    public void savePositionSurveyOne(int currentItem, int survey) {
-        switch (survey) {
-            case 0:
-                sharedPreferences.edit().putInt(SURVEY_ONE_POSITION, currentItem).apply();
-                break;
-            case 1:
-                sharedPreferences.edit().putInt(SURVEY_TWO_POSITION, currentItem).apply();
-                break;
-        }
+    public void savePositionSurveyOne(int currentItem, String key) {
+        sharedPreferences.edit().putInt(key, currentItem).apply();
     }
 
-    public int getPositionSurveyOne(int currentItem) {
-        switch (currentItem) {
-            case 0:
-                return sharedPreferences.getInt(SURVEY_ONE_POSITION, 0);
-            case 1:
-                return sharedPreferences.getInt(SURVEY_TWO_POSITION, 0);
-            default:
-                return 0;
-        }
+    public int getPositionSurveyOne(String key) {
+        return sharedPreferences.getInt(key, 0);
     }
+
 
 }

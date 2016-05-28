@@ -205,6 +205,14 @@ public class QuestionsModel {
         @SerializedName("option_prompt")
         @Expose
         private Object optionPrompt;
+        @SerializedName("min")
+        @Expose
+        private int min = 0;
+        @SerializedName("max")
+        @Expose
+        private int max = 99999999;
+
+
 
         /**
          * @return The optionType
@@ -275,6 +283,36 @@ public class QuestionsModel {
         public void setOptionPrompt(Object optionPrompt) {
             this.optionPrompt = optionPrompt;
         }
+
+        /**
+         * @return The questionKey
+         */
+        public int getMin() {
+            return min;
+        }
+
+        /**
+         * @param min The question_key
+         */
+        public void setMin(int min) {
+            this.min = min;
+        }
+
+        /**
+         * @return The max
+         */
+        public int getMax() {
+            return max;
+        }
+
+        /**
+         * @param max The question_key
+         */
+        public void setMax(int max) {
+            this.max = max;
+        }
+
+
 
     }
 
