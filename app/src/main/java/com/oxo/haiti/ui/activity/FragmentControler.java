@@ -28,6 +28,7 @@ import com.oxo.haiti.ui.base.BaseActivity;
 import com.oxo.haiti.utils.CommonInterface;
 import com.oxo.haiti.utils.Connectivity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
@@ -46,6 +47,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     private AnswerModel answerModel;
     private Toolbar toolbar;
     private String key = null;
+    private String status = null;
 
 
     @Override
@@ -70,6 +72,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         findViewById(R.id.next).setOnClickListener(this);
         findViewById(R.id.stop_survey).setOnClickListener(this);
         setUpToolbar();
+//        viewPager.setCurrentItem(executeQuestionId(236));
     }
 
     private void resumeSurvey(String surveyID, String isOne) {
@@ -133,11 +136,11 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             public void onPageSelected(int position) {
                 for (AnswerModel.SuveryAnswer suveryAnswer : answerModel.getSuveryAnswers()) {
                     if (suveryAnswer != null && questionsModelList.get(position) != null && questionsModelList.get(position).getQuestionId().equals(suveryAnswer.getQuestionId())) {
-                        getNextPosition(suveryAnswer.getNextId(), questionsModelList.get(position), suveryAnswer.getAnswer(), false);
+                        getNextPosition(suveryAnswer.getNextId(), questionsModelList.get(position), suveryAnswer.getAnswer(), false, null);
                     }
                 }
                 if (questionsModelList.get(position).getQuestionType().equals("message")) {
-                    getNextPosition(questionsModelList.get(position).getAnswers().get(0).getOptionNext() - 1, questionsModelList.get(position), "READ", false);
+                    getNextPosition(questionsModelList.get(position).getAnswers().get(0).getOptionNext(), questionsModelList.get(position), "READ", false, questionsModelList.get(position).getAnswers().get(0).getOptionStatus());
                 }
             }
 
@@ -161,7 +164,8 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 warning();
                 break;
             case R.id.next:
-                if (questionAdapter.getCount() != nextPosition) {
+                System.out.println("next_position" + nextPosition);
+                if (questionAdapter.getCount() != nextPosition && nextPosition != 0) {
                     findViewById(R.id.next).setVisibility(View.INVISIBLE);
                     findViewById(R.id.prev).setVisibility(View.VISIBLE);
                     viewPager.setCurrentItem(nextPosition);
@@ -173,36 +177,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         prevSteps.push(nextPosition);
                     }
                 } else {
-                    new AsyncTask() {
-                        @Override
-                        protected Object doInBackground(Object[] params) {
-                            SyncData();
-                            clearSaveState(key);
-                            return null;
-                        }
-
-                        @Override
-                        protected void onPreExecute() {
-                            super.onPreExecute();
-                            showProgress();
-                        }
-
-                        @Override
-                        protected void onPostExecute(Object o) {
-                            super.onPostExecute(o);
-                            hideBar();
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    findViewById(R.id.main_layout).setVisibility(View.GONE);
-                                    findViewById(R.id.finish_this).setVisibility(View.VISIBLE);
-                                    findViewById(R.id.finish_this).setOnClickListener(FragmentControler.this);
-
-                                }
-                            });
-
-                        }
-                    }.execute();
+                    backgroundStart();
                 }
                 break;
             case R.id.prev:
@@ -222,8 +197,43 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         }
     }
 
+    void backgroundStart() {
+        new AsyncTask() {
+            @Override
+            protected Object doInBackground(Object[] params) {
+                SyncData();
+                clearSaveState(key);
+                return null;
+            }
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                showProgress();
+            }
+
+            @Override
+            protected void onPostExecute(Object o) {
+                super.onPostExecute(o);
+                hideBar();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        findViewById(R.id.main_layout).setVisibility(View.GONE);
+                        findViewById(R.id.finish_this).setVisibility(View.VISIBLE);
+                        findViewById(R.id.finish_this).setOnClickListener(FragmentControler.this);
+
+                    }
+                });
+
+            }
+        }.execute();
+    }
+
 
     private void SyncData() {
+        if (status != null)
+            answerModel.setStatus(status);
         final String data = new Gson().toJson(answerModel);
         if (answerModel.getSuveryAnswers().size() > 0)
             if (Connectivity.InternetAvailable(this)) {
@@ -232,6 +242,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     @Override
                     public void onResponse(Call<CommonModel> call, Response<CommonModel> response) {
                         Log.d("", "onResponse: " + response.message());
+                        hideBar();
                         // messageToast("Success  " + response.message());
 
                     }
@@ -240,6 +251,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     public void onFailure(Call<CommonModel> call, Throwable t) {
                         Log.d("", "onResponse: Error");
                         SnappyNoSQL.getInstance().saveOfflineSurvey(data);
+                        hideBar();
 
 
                     }
@@ -257,13 +269,13 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
-                    case R.id.one:
-                        pauseSurvey();
-                        finish();
-                        break;
-                    case R.id.two:
-                        warning();
-                        break;
+//                    case R.id.one:
+//                        pauseSurvey();
+//                        finish();
+//                        break;
+//                    case R.id.two:
+//                        warning();
+//                        break;
                     case R.id.three:
                         clearSaveState(key);
                         ContentStorage.getInstance(FragmentControler.this).loggedIn(false);
@@ -289,10 +301,9 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
 
     @Override
-    public void getNextPosition(int position, QuestionsModel questionsModel, String answer, boolean isNew) {
+    public void getNextPosition(int position, QuestionsModel questionsModel, String answer, boolean isNew, Object object) {
         findViewById(R.id.next).setVisibility(View.VISIBLE);
-        this.nextPosition = position;
-
+        int next = executeQuestionId(position);
         if (isNew) {
             suveryAnswer = new AnswerModel.SuveryAnswer();
             suveryAnswer.setAnswer(answer);
@@ -300,7 +311,25 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             suveryAnswer.setQuestionId(questionsModel.getQuestionId());
             suveryAnswer.setQuestionKey(questionsModel.getQuestionKey());
         }
+        if (object != null)
+            status = (String) object;
     }
+
+
+    int executeQuestionId(int order) {
+        if (order == 0) {
+            nextPosition = order;
+            return nextPosition;
+        }
+        for (int i = 0; i < questionsModelList.size(); i++) {
+            if (questionsModelList.get(i).getQuestionOrder().equals(order)) {
+                nextPosition = i;
+                return nextPosition;
+            }
+        }
+        return 0;
+    }
+
 
     @Override
     public void hideNext() {
@@ -312,6 +341,19 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
     }
 
+    String nextId = null;
+
+    @Override
+    public void questionId(String id) {
+        nextId = id;
+
+    }
+
+    @Override
+    public String getNextId() {
+        return nextId;
+    }
+
 
     private void warning() {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -319,7 +361,10 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
-                        stopSurvey();
+                        pauseSurvey();
+                        finish();
+
+//                        stopSurvey();
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
                         dialog.dismiss();
@@ -331,5 +376,10 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(getString(R.string.are_you_sure)).setPositiveButton(getString(R.string.yes), dialogClickListener)
                 .setNegativeButton(getString(R.string.no), dialogClickListener).show();
+    }
+
+
+    @Override
+    protected void messageCallback(boolean flag) {
     }
 }

@@ -231,7 +231,7 @@ public class SnappyNoSQL {
 //    }
 
 
-    // key value pair
+    // key value pair ONE2016-06-01 01:03:49 ONE2016-06-01 01:03:49
 
 
     public void saveState(AnswerModel answerModel, String key) {
@@ -261,7 +261,7 @@ public class SnappyNoSQL {
                 snappyDB.del(key);
         } catch (SnappydbException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             removeKey(key);
         }
     }
@@ -269,7 +269,7 @@ public class SnappyNoSQL {
 
     public void saveStack(Stack<Integer> stack, String key) {
         try {
-            snappyDB.put(key, stack);
+            snappyDB.put(key + "Stack", stack);
         } catch (SnappydbException e) {
             e.printStackTrace();
         }
@@ -277,8 +277,8 @@ public class SnappyNoSQL {
 
     public Stack<Integer> getStack(String key) {
         try {
-            if (snappyDB.exists(key))
-                return snappyDB.get(key, Stack.class);
+            if (snappyDB.exists(key + "Stack"))
+                return snappyDB.get(key + "Stack", Stack.class);
         } catch (SnappydbException e) {
             e.printStackTrace();
         }
@@ -287,8 +287,8 @@ public class SnappyNoSQL {
 
     public void removeStack(String key) {
         try {
-            if (snappyDB.exists(key))
-                snappyDB.del(key);
+            if (snappyDB.exists(key + "Stack"))
+                snappyDB.del(key + "Stack");
         } catch (SnappydbException e) {
             e.printStackTrace();
         }
@@ -298,7 +298,8 @@ public class SnappyNoSQL {
     private void storeKey(String key) {
         try {
             List<String> keys = getKeys();
-            keys.add(key);
+            if (!keys.contains(key))
+                keys.add(key);
             snappyDB.put(KEYSTORE, keys);
         } catch (SnappydbException e) {
             e.printStackTrace();

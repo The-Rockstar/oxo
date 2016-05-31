@@ -17,9 +17,11 @@
     <string name="pause">Pòz</string>
     <string name="stop">Kanpe ankèt la</string>
     <string name="sign_out">Dekonekte</string>
-    <string name="survey_one" >Kay</string>
+    <string name="survey_one" >kay la</string>
     <string name="survey_two" >moun</string>
     <string name="new_hh">Nouvo kay la</string>
+    <string name="nouvomoun">Nouvo moun</string>
+
     <string name="alreadystarted">Lis kay yo ou deja \n komansè men \n poko fini avek yo</string>
     <string name="kontinye">Kontinye</string>
     <string name="prev">Retounen</string>
@@ -27,6 +29,8 @@
     <string name="no">non</string>
     <string name="stop_survey">Kanpe ankèt la</string>
     <string name="are_you_sure">Eske ou si ouvle kanpe ankèt la?</string>
+    <string name="alreadystartedone">Lis kay yo ou deja komansè men poko fini avek yo</string>
+    <string name="alreadystartedtwo">Lis moun  yo ou deja komansè men poko fini avek yo</string>
 
 
 </resources>

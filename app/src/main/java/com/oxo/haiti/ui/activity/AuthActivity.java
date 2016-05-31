@@ -27,7 +27,6 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
     /**
      * Created by jaswinderwadali on 5/16/2016.
      */
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (ContentStorage.getInstance(this).isLoggedIn()) {
@@ -38,7 +37,6 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
         setContentView(R.layout.activity_auth);
         Button button = (Button) findViewById(R.id.login_bt);
         button.setOnClickListener(this);
-
         if (!isActive()) {
             changeStatus(false);
             fetchUsers();
@@ -146,5 +144,10 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
                 messageToast(getString(R.string.invalid_userpass));
             }
         }
+    }
+
+    @Override
+    protected void messageCallback(boolean flag) {
+
     }
 }

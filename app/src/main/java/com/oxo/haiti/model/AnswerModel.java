@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by jaswinderwadali on 19/05/16.
  */
-public class AnswerModel implements Serializable{
+public class AnswerModel implements Serializable {
 
     @SerializedName("survery_id")
     @Expose
@@ -21,6 +21,23 @@ public class AnswerModel implements Serializable{
     @SerializedName("suvery_answers")
     @Expose
     private List<SuveryAnswer> suveryAnswers = new ArrayList<>();
+    @SerializedName("stop_status")
+    @Expose
+    private String status;
+
+    /**
+     * @return The answer
+     */
+    public String getStatus() {
+        return status;
+    }
+
+    /**
+     * @param status The answer
+     */
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
 
     /**
@@ -66,7 +83,7 @@ public class AnswerModel implements Serializable{
     }
 
 
-    public static class SuveryAnswer {
+    public static class SuveryAnswer  implements Serializable{
 
         @SerializedName("question_id")
         @Expose
@@ -138,6 +155,7 @@ public class AnswerModel implements Serializable{
         public void setAnswer(String answer) {
             this.answer = answer;
         }
+
 
     }
 

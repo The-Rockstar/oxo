@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/one"
-        android:icon="@drawable/stop_24dp"
-        android:title="@string/pause"
-        android:visible="true" />
-    <item
-        android:id="@+id/two"
-        android:icon="@drawable/pause_24dp"
-        android:title="@string/stop"
-        android:visible="true" />
-    <item
         android:id="@+id/three"
         android:icon="@drawable/logout"
         android:title="@string/sign_out"

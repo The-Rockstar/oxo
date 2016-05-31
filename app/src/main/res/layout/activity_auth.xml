@@ -5,74 +5,88 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".ui.activity.AuthActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="right"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+
+        android:paddingTop="@dimen/activity_vertical_margin">
 
         <TextView
             android:id="@+id/status_tv"
             android:layout_width="wrap_content"
-            android:text="@string/notactiviated"
+            android:layout_height="match_parent"
             android:gravity="center"
+            android:text="@string/notactiviated"
             android:textColor="@android:color/black"
-            android:textSize="16dp"
-            android:layout_height="match_parent" />
+            android:textSize="16dp" />
 
         <ImageView
-            android:padding="10dp"
             android:id="@+id/sync_iv"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_gravity="right|top"
+            android:padding="10dp"
             android:scaleType="fitXY"
             android:src="@drawable/ic_sync_problem_50dp" />
 
 
     </LinearLayout>
-<LinearLayout
-    android:orientation="vertical"
-    android:layout_weight="1"
-    android:gravity="center"
-    android:layout_marginBottom="50dp"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
 
-    <EditText
-        android:id="@+id/username_et"
-        android:singleLine="true"
-        android:hint="@string/usernamehint"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp" />
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin">
+
+        <EditText
+            android:id="@+id/username_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:hint="@string/usernamehint"
+            android:singleLine="true" />
 
 
-    <EditText
-        android:hint="@string/password"
-        android:singleLine="true"
-        android:inputType="textPassword"
-        android:id="@+id/password_et"
+        <EditText
+            android:id="@+id/password_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:hint="@string/password"
+            android:inputType="textPassword"
+            android:singleLine="true" />
+
+        <Button
+            android:id="@+id/login_bt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:background="@color/colorPrimary"
+            android:text="@string/login"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp" />
+        android:gravity="right"
+        android:textSize="12dp"
 
-    <Button
-        android:id="@+id/login_bt"
-        android:background="@color/colorPrimary"
-        android:text="@string/login"
-        android:textColor="@android:color/white"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="15dp" />
-
-</LinearLayout>
-
+        android:padding="5dp"
+        android:text="Copyright © 2016 Dr. Ashish Joshi. All rights reserved."
+        android:textColor="@color/appColor" />
 
 </LinearLayout>

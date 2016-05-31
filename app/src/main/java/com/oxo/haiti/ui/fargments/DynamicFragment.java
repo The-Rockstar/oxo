@@ -1,10 +1,8 @@
 package com.oxo.haiti.ui.fargments;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.Html;
 import android.text.InputType;
@@ -13,14 +11,18 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.oxo.haiti.R;
 import com.oxo.haiti.model.AnswerModel;
 import com.oxo.haiti.model.QuestionsModel;
@@ -31,8 +33,10 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -54,6 +58,8 @@ public class DynamicFragment extends Fragment {
     private Map<Integer, CheckBox> checkboxlist;
     private LinearLayout editTextInflatedView = null;
     private CheckBox otherCheckBox = null;
+    private List<View> editTextIds = new ArrayList<>();
+    private Map<Integer, String> editTextAnswers = new HashMap<>();
 
 
     public static DynamicFragment getFragment(int position, CommonInterface commonInterface, QuestionsModel questionsModel, AnswerModel answerModel) {
@@ -69,43 +75,139 @@ public class DynamicFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.dynamic_fragment, container, false);
-        headerTextView = (TextView) view.findViewById(R.id.header);
-        answerContainer = (LinearLayout) view.findViewById(R.id.ans_container);
-        questionDec = (TextView) view.findViewById(R.id.questionDec);
-        insertDate();
-        headerTextView.setText(Html.fromHtml(questionsModel.getQuestionText()));
 
-        for (AnswerModel.SuveryAnswer suveryAnswer : answerModel.getSuveryAnswers()) {
-            if (suveryAnswer != null && questionDec != null && questionsModel.getQuestionId().equals(suveryAnswer.getQuestionId())) {
-                this.suveryAnswer = suveryAnswer;
+        try {
+            headerTextView = (TextView) view.findViewById(R.id.header);
+            answerContainer = (LinearLayout) view.findViewById(R.id.ans_container);
+            questionDec = (TextView) view.findViewById(R.id.questionDec);
+            insertDate();
+            headerTextView.setText(Html.fromHtml(questionsModel.getQuestionText()));
+
+            for (AnswerModel.SuveryAnswer suveryAnswer : answerModel.getSuveryAnswers()) {
+                if (suveryAnswer != null && questionDec != null && questionsModel.getQuestionId().equals(suveryAnswer.getQuestionId())) {
+                    this.suveryAnswer = suveryAnswer;
+                }
             }
+
+            if (questionsModel.getQuestionType().equals("radio"))
+                generateRadioButtonView();
+            else if (questionsModel.getQuestionType().equals("message"))
+                setMessageType();
+            else if (questionsModel.getQuestionType().equals("checkbox"))
+                checkBoxInput();
+            else if (questionsModel.getQuestionType().equals("checkbox_radio"))
+                checkBox_radio();
+            else if (questionsModel.getQuestionType().equals("number_radio"))
+                dynamicTextInput();
+            else if (questionsModel.getQuestionType().equals("number_number_radio"))
+                dynamicTextInput();
+            else if (questionsModel.getQuestionType().equals("text_text"))
+                dynamicTextInput();
+            else if (questionsModel.getQuestionType().equals("text_text_radio"))
+                dynamicTextInput();
+            else if (questionsModel.getQuestionType().equals("select"))
+                generateRadioButtonView();
+            else
+                generateEt();
+
+
+            if (!TextUtils.isEmpty(questionsModel.getQuestionDesc()))
+                questionDec.setText(Html.fromHtml(questionsModel.getQuestionDesc()));
+        } catch (Exception e) {
+            showDialogMessage("Something went wrong need to contact developer");
+        } finally {
+            return view;
         }
-
-        if (questionsModel.getQuestionType().equals("radio"))
-            generateRadioButtonView();
-        else if (questionsModel.getQuestionType().equals("message"))
-            setMessageType();
-        else if (questionsModel.getQuestionType().equals("checkbox"))
-            checkBoxInput();
-        else if (questionsModel.getQuestionType().equals("checkbox_radio"))
-            checkBox_radio();
-        else if (questionsModel.getQuestionType().equals("input_radio"))
-            input_radio();
-        else if (questionsModel.getQuestionType().equals("text_text"))
-            dynamicTextInput();
-        else
-            generateEt();
-
-
-        if (!TextUtils.isEmpty(questionsModel.getQuestionDesc()))
-            questionDec.setText(Html.fromHtml(questionsModel.getQuestionDesc()));
-        return view;
     }
 
-    private void dynamicTextInput() {
+    private void selector() {
+        ArrayList<String> spinnerArray = new ArrayList<String>();
+
         for (int i = 0; i < questionsModel.getAnswers().size(); i++) {
-            generateEt(questionsModel.getAnswers().get(i).getMax(), questionsModel.getAnswers().get(i).getMin());
+            spinnerArray.add(questionsModel.getAnswers().get(i).getOptionText());
         }
+
+        Spinner spinner = new Spinner(getContext());
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_dropdown_item, spinnerArray);
+        spinner.setAdapter(spinnerArrayAdapter);
+        answerContainer.addView(spinner);
+
+        for (int i = 0; i < questionsModel.getAnswers().size(); i++) {
+            if (suveryAnswer != null)
+                if (suveryAnswer.getAnswer().equals(questionsModel.getAnswers().get(i).getOptionValue()))
+                    spinner.setSelection(i);
+
+        }
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Object status = questionsModel.getAnswers().get(position).getOptionStatus();
+                commonInterface.getNextPosition(questionsModel.getAnswers().get(position).getOptionNext(), questionsModel, questionsModel.getAnswers().get(position).getOptionValue(), true, status);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+    }
+
+    RadioGroup rg = null;
+
+    private void dynamicTextInput() {
+        final RadioButton[] rb = new RadioButton[questionsModel.getAnswers().size()];
+        rg = new RadioGroup(getContext()); //create the RadioGroup
+        rg.setOrientation(RadioGroup.VERTICAL);//or RadioGroup.VERTICAL
+        for (int i = 0; i < questionsModel.getAnswers().size(); i++) {
+            if (questionsModel.getAnswers().get(i).getOptionType().equals("number")) {
+                View id = generateEt(questionsModel.getAnswers().get(i).getMax(), questionsModel.getAnswers().get(i).getMin(), i);
+                editTextIds.add(id);
+            }
+            if (questionsModel.getAnswers().get(i).getOptionType().equals("radio")) {
+                rb[i] = new RadioButton(getContext());
+                rg.addView(rb[i]);
+                rb[i].setText(Html.fromHtml(questionsModel.getAnswers().get(i).getOptionText()));
+                rb[i].setId(i + 100);
+                rb[i].setTag(i);
+                if (suveryAnswer != null)
+                    if (questionsModel.getAnswers().get(i).getOptionValue().equals(suveryAnswer.getAnswer())) {
+                        ((RadioButton) rg.getChildAt(i)).setChecked(true);
+                    }
+            }
+            rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                                              @Override
+                                              public void onCheckedChanged(RadioGroup group, int checkedId) {
+                                                  RadioButton checkedRadioButton = (RadioButton) rg.findViewById(checkedId);
+                                                  boolean isChecked = checkedRadioButton.isChecked();
+                                                  if (isChecked) {
+                                                      for (View id : editTextIds) {
+                                                          EditText editText = (EditText) id;
+                                                          if (editText != null)
+                                                              editText.setText("");
+                                                      }
+                                                      int position = (Integer) checkedRadioButton.getTag();
+                                                      if (questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt() != null)
+                                                          showDialogMessage(questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt().toString());
+                                                      int radioPosition = (Integer) checkedRadioButton.getTag();
+                                                      Object status = questionsModel.getAnswers().get(radioPosition).getOptionStatus();
+                                                      commonInterface.getNextPosition(questionsModel.getAnswers().get(radioPosition).getOptionNext(), questionsModel, questionsModel.getAnswers().get(radioPosition).getOptionValue(), true, status);
+                                                      if (!TextUtils.isEmpty(questionsModel.getAnswers().get(position).getOptionValue()) && questionsModel.getAnswers().get(position).getOptionValue().equals("66")) {
+                                                          commonInterface.hideNext();
+                                                          if (editTextInflatedView != null) {
+                                                              //    editTextInflatedView.removeAllViews();
+                                                          }
+                                                          generateEt();
+                                                      }
+                                                  } else {
+                                                      //   editTextInflatedView.removeAllViews();
+                                                  }
+                                              }
+                                          }
+
+            );
+        }
+        answerContainer.addView(rg);
     }
 
     void insertDate() {
@@ -138,19 +240,31 @@ public class DynamicFragment extends Fragment {
 
         }
         rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                RadioButton checkedRadioButton = (RadioButton) rg.findViewById(checkedId);
-                boolean isChecked = checkedRadioButton.isChecked();
-                if (isChecked) {
-                    if (questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt() != null)
-                        showDialogMessage(questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt().toString());
-                    int radioPosition = (Integer) checkedRadioButton.getTag();
-                    commonInterface.getNextPosition(questionsModel.getAnswers().get(radioPosition).getOptionNext() - 1, questionsModel, questionsModel.getAnswers().get(radioPosition).getOptionValue(), true);
+                                          @Override
+                                          public void onCheckedChanged(RadioGroup group, int checkedId) {
+                                              RadioButton checkedRadioButton = (RadioButton) rg.findViewById(checkedId);
+                                              boolean isChecked = checkedRadioButton.isChecked();
+                                              if (isChecked) {
+                                                  int position = (Integer) checkedRadioButton.getTag();
+                                                  if (questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt() != null)
+                                                      showDialogMessage(questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt().toString());
+                                                  int radioPosition = (Integer) checkedRadioButton.getTag();
+                                                  Object status = questionsModel.getAnswers().get(radioPosition).getOptionStatus();
+                                                  commonInterface.getNextPosition(questionsModel.getAnswers().get(radioPosition).getOptionNext(), questionsModel, questionsModel.getAnswers().get(radioPosition).getOptionValue(), true, status);
+                                                  if (!TextUtils.isEmpty(questionsModel.getAnswers().get(position).getOptionValue()) && questionsModel.getAnswers().get(position).getOptionValue().equals("66")) {
+                                                      commonInterface.hideNext();
+                                                      if (editTextInflatedView != null) {
+                                                          editTextInflatedView.removeAllViews();
+                                                      }
+                                                      generateEt();
+                                                  }
+                                              } else {
+                                                  editTextInflatedView.removeAllViews();
+                                              }
+                                          }
+                                      }
 
-                }
-            }
-        });
+        );
         answerContainer.addView(rg);
     }
 
@@ -158,10 +272,15 @@ public class DynamicFragment extends Fragment {
     private void generateEt() {
         editTextInflatedView = (LinearLayout) getLayoutInflater(getArguments()).inflate(R.layout.input_text, null);
         EditText editText = (EditText) editTextInflatedView.findViewById(R.id.text_et);
-        if (questionsModel.getQuestionType().equals("number")) {
+        if (questionsModel.getQuestionType().contains("number")) {
             editText.setInputType(InputType.TYPE_CLASS_NUMBER);
             UPPER_LIMIT = questionsModel.getMax();
             LOWER_LIMIT = questionsModel.getMin();
+
+            UPPER_LIMIT = questionsModel.getMax();
+            LOWER_LIMIT = questionsModel.getMin();
+
+
         }
         if (suveryAnswer != null)
             editText.setText(suveryAnswer.getAnswer());
@@ -175,17 +294,20 @@ public class DynamicFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() > 0) {
-                    if (questionsModel.getQuestionType().equals("number")) {
+                    if (questionsModel.getQuestionType().contains("number")) {
                         if (UPPER_LIMIT < Integer.parseInt(s.toString()) || Integer.parseInt(s.toString()) < LOWER_LIMIT) {
                             commonInterface.hideNext();
                             BaseActivity baseActivity = (BaseActivity) getActivity();
                             baseActivity.messageToast("Antre yon nimewo/kantite antre " + LOWER_LIMIT + " a " + UPPER_LIMIT + ".");
                         } else {
-                            commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, s.toString(), true);
+                            Object status = questionsModel.getAnswers().get(0).getOptionStatus();
+                            commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext(), questionsModel, s.toString(), true, status);
                         }
-                    } else
-                        commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, s.toString(), true);
-//                    view.setTag(new Temp(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, s.toString(), true));
+                    } else {
+                        Object status = questionsModel.getAnswers().get(0).getOptionStatus();
+                        commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext(), questionsModel, s.toString(), true, status);
+//                    view.setTag(new Temp(questionsModel.getAnswers().get(0).getOptionNext()  , questionsModel, s.toString(), true));
+                    }
                 } else
                     commonInterface.hideNext();
             }
@@ -201,13 +323,25 @@ public class DynamicFragment extends Fragment {
     }
 
 
-    private void generateEt(final int min, final int max) {
+    private View generateEt(final int max, final int min, final int position) {
         editTextInflatedView = (LinearLayout) getLayoutInflater(getArguments()).inflate(R.layout.input_text, null);
+        editTextInflatedView.setId(new Random(100).nextInt());
+        if (suveryAnswer != null) {
+            try {
+                editTextAnswers = new Gson().fromJson(suveryAnswer.getAnswer(), HashMap.class);
+            } catch (Exception e) {
+
+            }
+        }
         EditText editText = (EditText) editTextInflatedView.findViewById(R.id.text_et);
-        if (questionsModel.getQuestionType().equals("number")) {
+        if (editTextAnswers.containsKey(position)) {
+            editText.setText(editTextAnswers.get(position));
+        }
+        editText.setId(new Random(67).nextInt());
+        if (questionsModel.getQuestionType().contains("number")) {
             editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-            UPPER_LIMIT = questionsModel.getMax();
-            LOWER_LIMIT = questionsModel.getMin();
+            UPPER_LIMIT = max;
+            LOWER_LIMIT = min;
         }
         if (suveryAnswer != null)
             editText.setText(suveryAnswer.getAnswer());
@@ -221,17 +355,28 @@ public class DynamicFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() > 0) {
-                    if (questionsModel.getQuestionType().equals("number")) {
+                    if (rg != null) {
+                        int id = rg.getCheckedRadioButtonId();
+                        if (id != -1) {
+                            RadioButton radioButton = (RadioButton) rg.findViewById(id);
+                            radioButton.setChecked(false);
+                        }
+                    }
+                    if (questionsModel.getQuestionType().contains("number")) {
                         if (max < Integer.parseInt(s.toString()) || Integer.parseInt(s.toString()) < min) {
                             commonInterface.hideNext();
                             BaseActivity baseActivity = (BaseActivity) getActivity();
                             baseActivity.messageToast("Antre yon nimewo/kantite antre " + max + " a " + min + ".");
                         } else {
-                            commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, s.toString(), true);
+                            editTextAnswers.put(position, s.toString());
+                            Object status = questionsModel.getAnswers().get(position).getOptionStatus();
+                            commonInterface.getNextPosition(questionsModel.getAnswers().get(position).getOptionNext(), questionsModel, new Gson().toJson(editTextAnswers, HashMap.class), true, status);
                         }
-                    } else
-                        commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, s.toString(), true);
-//                    view.setTag(new Temp(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, s.toString(), true));
+                    } else {
+                        Object status = questionsModel.getAnswers().get(position).getOptionStatus();
+                        commonInterface.getNextPosition(questionsModel.getAnswers().get(position).getOptionNext(), questionsModel, s.toString(), true, status);
+//                    view.setTag(new Temp(questionsModel.getAnswers().get(0).getOptionNext()  , questionsModel, s.toString(), true));
+                    }
                 } else
                     commonInterface.hideNext();
             }
@@ -243,7 +388,7 @@ public class DynamicFragment extends Fragment {
             }
         });
         answerContainer.addView(editTextInflatedView);
-
+        return editText;
     }
 
 
@@ -266,7 +411,7 @@ public class DynamicFragment extends Fragment {
                 }
 
 
-            if (questionsModel.getAnswers().get(i).getOptionText().contains("Lòt")) {
+            if (questionsModel.getAnswers().get(i).getOptionText().contains("Lòt") || questionsModel.getAnswers().get(i).getOptionText().contains("lòt") || questionsModel.getAnswers().get(i).getOptionText().toLowerCase().indexOf("lòt") != -1) {
                 otherCheckBox = checkBox;
                 checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
@@ -309,7 +454,9 @@ public class DynamicFragment extends Fragment {
 
                             checkboxlist.put(buttonView.getId(), (CheckBox) buttonView);
                             checkBoxAnswers.add(value);
-                            commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, /*TextUtils.join(",", checkBoxAnswers)*/checkBoxAnswers.toString(), true);
+                            Object status = questionsModel.getAnswers().get(0).getOptionStatus();
+
+                            commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext(), questionsModel, /*TextUtils.join(",", checkBoxAnswers)*/checkBoxAnswers.toString(), true, status);
                         } else {
                             checkboxlist.remove(buttonView.getId());
                             checkBoxAnswers.remove(value);
@@ -321,31 +468,20 @@ public class DynamicFragment extends Fragment {
 
                     }
                 });
-
-
         }
 
     }
 
 
     private void setMessageType() {
-        //  commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, "", true);
+        //  commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext()  , questionsModel, "", true);
 
     }
 
+
     protected void showDialogMessage(String message) {
-        if (!TextUtils.isEmpty(message)) {
-            AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
-            //alert.setTitle("Doctor");
-            alert.setMessage(Html.fromHtml(message));
-            alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-//                finish();
-                }
-            });
-            alert.show();
-        }
+        BaseActivity activity = (BaseActivity) getActivity();
+        activity.showDialogMessage(message);
     }
 
 
@@ -386,7 +522,8 @@ public class DynamicFragment extends Fragment {
                                 }
                                 checkboxlist.put(buttonView.getId(), (CheckBox) buttonView);
                                 checkBoxAnswers.add(value);
-                                commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext() - 1, questionsModel, /*TextUtils.join(",", checkBoxAnswers)*/checkBoxAnswers.toString(), true);
+                                Object status = questionsModel.getAnswers().get(0).getOptionStatus();
+                                commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext(), questionsModel, /*TextUtils.join(",", checkBoxAnswers)*/checkBoxAnswers.toString(), true, status);
                             } else {
                                 checkBoxAnswers.remove(value);
                                 checkboxlist.remove(buttonView.getId());
@@ -417,10 +554,18 @@ public class DynamicFragment extends Fragment {
                     RadioButton checkedRadioButton = (RadioButton) rg.findViewById(checkedId);
                     boolean isChecked = checkedRadioButton.isChecked();
                     if (isChecked) {
-                        if (questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt() != null)
-                            showDialogMessage(questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt().toString());
-                        int radioPosition = (Integer) checkedRadioButton.getTag();
-                        commonInterface.getNextPosition(questionsModel.getAnswers().get(radioPosition).getOptionNext() - 1, questionsModel, questionsModel.getAnswers().get(radioPosition).getOptionValue(), true);
+
+                        int position = (Integer) checkedRadioButton.getTag();
+                        if (questionsModel.getAnswers().get(position).getOptionPrompt() != null)
+                            showDialogMessage(questionsModel.getAnswers().get(position).getOptionPrompt().toString());
+                        Object status = questionsModel.getAnswers().get(position).getOptionStatus();
+                        commonInterface.getNextPosition(questionsModel.getAnswers().get(position).getOptionNext(), questionsModel, questionsModel.getAnswers().get(position).getOptionValue(), true, status);
+
+                        if (questionsModel.getAnswers().get(position).getOptionText().contains("Lòt")) {
+                            generateEt();
+                            commonInterface.hideNext();
+                        }
+
                         if (!checkboxlist.isEmpty()) {
                             for (Integer id : checkboxlist.keySet()) {
                                 CheckBox checkBox = checkboxlist.get(id);
@@ -430,6 +575,7 @@ public class DynamicFragment extends Fragment {
                                 editTextInflatedView.removeAllViews();
                             }
                             checkBoxAnswers.clear();
+
                         }
                     } else {
 
@@ -438,14 +584,9 @@ public class DynamicFragment extends Fragment {
                 }
 
             });
-            answerContainer.addView(rg);
-
-
         }
+        answerContainer.addView(rg);
 
-    }
-
-    private void input_radio() {
 
     }
 
@@ -464,4 +605,6 @@ public class DynamicFragment extends Fragment {
             }
         }
     }
+
+
 }

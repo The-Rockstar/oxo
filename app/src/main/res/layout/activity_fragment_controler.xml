@@ -14,13 +14,13 @@
     <LinearLayout
         android:id="@+id/main_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <android.support.v4.view.ViewPager
             android:id="@+id/main_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1" />
 
         <LinearLayout
@@ -48,8 +48,8 @@
                 android:layout_marginRight="5dp"
                 android:layout_weight="1"
                 android:background="@color/orange"
-                android:padding="5dp"
                 android:gravity="center"
+                android:padding="5dp"
                 android:text="@string/stop_survey"
                 android:textColor="@android:color/white" />
 
@@ -65,6 +65,17 @@
                 android:textColor="@android:color/white"
                 android:visibility="invisible" />
         </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:textSize="12dp"
+            android:padding="5dp"
+            android:textColor="@color/appColor"
+            android:text="Copyright © 2016 Dr. Ashish Joshi. All rights reserved." />
+
+
     </LinearLayout>
 
     <LinearLayout
@@ -84,5 +95,6 @@
 
 
     </LinearLayout>
+
 
 </LinearLayout>

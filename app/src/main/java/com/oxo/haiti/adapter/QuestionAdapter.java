@@ -3,7 +3,6 @@ package com.oxo.haiti.adapter;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.view.View;
 
@@ -39,6 +38,7 @@ public class QuestionAdapter extends FragmentStatePagerAdapter {
     public void restoreState(Parcelable state, ClassLoader loader) {
         super.restoreState(state, loader);
     }
+
 
     @Override
     public int getCount() {

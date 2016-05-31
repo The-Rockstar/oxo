@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.oxo.haiti.R;
@@ -14,7 +15,7 @@ import com.oxo.haiti.storage.SnappyNoSQL;
 /**
  * Created by wadali on 5/17/2016.
  */
-public class BaseActivity extends AppCompatActivity {
+public abstract class BaseActivity extends AppCompatActivity implements DialogInterface.OnClickListener {
 
 
     private boolean doubleBackToExitPressedOnce = false;
@@ -57,16 +58,20 @@ public class BaseActivity extends AppCompatActivity {
     }
 
 
-    protected void showDialogMessage(String message) {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setMessage(message);
-        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                    //finish();
-            }
-        });
-        alert.show();
+    public void showDialogMessage(String message) {
+        messageCallback(false);
+        if (!TextUtils.isEmpty(message)) {
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+            alert.setMessage(message);
+            alert.setPositiveButton("OK", this);
+            alert.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    messageCallback(true);
+                }
+            });
+            alert.show();
+        }
     }
 
     protected void clearSaveState(String key) {
@@ -74,4 +79,14 @@ public class BaseActivity extends AppCompatActivity {
         SnappyNoSQL.getInstance().removeSaveState(key);
         SnappyNoSQL.getInstance().removeStack(key);
     }
+
+
+    @Override
+    public void onClick(DialogInterface dialog, int which) {
+        //finish();
+        messageCallback(true);
+    }
+
+    protected abstract void messageCallback(boolean flag);
+
 }

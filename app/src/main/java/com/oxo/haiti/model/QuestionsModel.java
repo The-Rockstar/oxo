@@ -33,6 +33,7 @@ public class QuestionsModel {
     @Expose
     private String questionMessage;
 
+
     @SerializedName("min")
     @Expose
     private int min = 0;
@@ -213,6 +214,10 @@ public class QuestionsModel {
         private int max = 99999999;
 
 
+        @SerializedName("option_status")
+        @Expose
+        private Object optionStatus;
+
 
         /**
          * @return The optionType
@@ -312,6 +317,18 @@ public class QuestionsModel {
             this.max = max;
         }
 
+        /**
+         * @return The max
+         */
+        public Object getOptionStatus() {
+            return optionStatus;
+        }
+        /**
+         * @param optionStatus The question_key
+         */
+        public void setMax(Object optionStatus) {
+            this.optionStatus = optionStatus;
+        }
 
 
     }

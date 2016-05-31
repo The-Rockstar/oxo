@@ -12,21 +12,15 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.oxo.haiti.R;
-import com.oxo.haiti.model.CommonModel;
-import com.oxo.haiti.service.RestAdapter;
 import com.oxo.haiti.storage.ContentStorage;
 import com.oxo.haiti.storage.SnappyNoSQL;
 import com.oxo.haiti.ui.base.BaseActivity;
 import com.oxo.haiti.utils.ExpandableLayout;
 
-import java.security.PrivateKey;
+import org.joda.time.DateTime;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ControlActivity extends BaseActivity implements View.OnClickListener {
     /**
@@ -35,7 +29,6 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
     private Toolbar toolbar;
     private List<String> sOneKeys = new ArrayList<>();
     private List<String> sTwoKeys = new ArrayList<>();
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +58,13 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
 
         TextView textView = (TextView) expandableLayoutTwo.findViewById(R.id.header_tv);
         textView.setText(getString(R.string.survey_two));
+
+        TextView bodynewtwo = (TextView) expandableLayoutTwo.findViewById(R.id.new_survey);
+        bodynewtwo.setText(getString(R.string.nouvomoun));
+
+        TextView alreadyStartedTwo = (TextView) expandableLayoutTwo.findViewById(R.id.resume_survey);
+        alreadyStartedTwo.setText(R.string.alreadystartedtwo);
+
 
         expandableLayoutOne.findViewById(R.id.new_survey).setTag(0);
         expandableLayoutTwo.findViewById(R.id.new_survey).setTag(1);
@@ -106,27 +106,21 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
     View.OnClickListener resumeSurvey = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-
-            Intent intent = new Intent(ControlActivity.this, FragmentControler.class);
             switch ((int) v.getTag()) {
                 case 0:
-                    intent.putExtra("SURVEY", "ONE");
                     alertBuilder(sOneKeys);
-                    intent.putExtra("RESUME", true);
-
                     break;
                 case 1:
-                    intent.putExtra("SURVEY", "TWO");
                     alertBuilder(sTwoKeys);
-                    intent.putExtra("RESUME", true);
                     break;
             }
-//            startActivity(intent);
         }
     };
 
 
     private void problemSolver() {
+        sOneKeys.clear();
+        sTwoKeys.clear();
         List<String> keys = SnappyNoSQL.getInstance().getKeys();
         for (String key : keys) {
             if (key.contains("ONE"))
@@ -143,11 +137,11 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
             intent.putExtra("RESUME", false);
             switch ((int) v.getTag()) {
                 case 0:
-                    intent.putExtra("key", "ONE" + new Random(100));
+                    intent.putExtra("key", "ONE" + new DateTime().toString("yyyy-MM-dd hh:mm:ss"));
                     intent.putExtra("SURVEY", "ONE");
                     break;
                 case 1:
-                    intent.putExtra("key", "TWO" + new Random(100));
+                    intent.putExtra("key", "TWO" + new DateTime().toString("yyyy-MM-dd hh:mm:ss"));
                     intent.putExtra("SURVEY", "TWO");
                     break;
             }
@@ -180,12 +174,21 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
     }
 
 
-    private void alertBuilder(List<String> list) {
+    private void alertBuilder(final List<String> pureList) {
+        List<String> list = new ArrayList<>(pureList);
+        boolean flag = false;
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).contains("ONE")) {
+                flag = true;
+            }
+            list.set(i, list.get(i).replace("ONE", ""));
+            list.set(i, list.get(i).replace("TWO", ""));
+        }
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
-        builderSingle.setTitle("Select One Name:-");
+        builderSingle.setTitle(getString(flag ? R.string.alreadystartedone : R.string.alreadystartedtwo).concat(" : "));
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.select_dialog_singlechoice);
+                android.R.layout.simple_expandable_list_item_1);
         arrayAdapter.addAll(list);
 
         builderSingle.setNegativeButton(
@@ -202,11 +205,22 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String strName = arrayAdapter.getItem(which);
+                        String keyValue = pureList.get(which);
+                        Intent intent = new Intent(ControlActivity.this, FragmentControler.class);
+                        intent.putExtra("SURVEY", keyValue.contains("ONE") ? "ONE" : "TWO");
+                        intent.putExtra("RESUME", true);
+                        intent.putExtra("key", keyValue);
+                        startActivity(intent);
                         dialog.dismiss();
                     }
-                });
+                }
+
+        );
         builderSingle.show();
     }
 
+    @Override
+    protected void messageCallback(boolean flag) {
+
+    }
 }
