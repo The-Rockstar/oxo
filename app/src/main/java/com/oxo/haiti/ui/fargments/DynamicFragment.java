@@ -105,6 +105,8 @@ public class DynamicFragment extends Fragment {
                 dynamicTextInput();
             else if (questionsModel.getQuestionType().equals("text_text_radio"))
                 dynamicTextInput();
+            else if (questionsModel.getQuestionType().equals("text_radio"))
+                dynamicTextInput();
             else if (questionsModel.getQuestionType().equals("select"))
                 generateRadioButtonView();
             else
@@ -257,6 +259,10 @@ public class DynamicFragment extends Fragment {
                                                           editTextInflatedView.removeAllViews();
                                                       }
                                                       generateEt();
+                                                  } else {
+                                                      if (editTextInflatedView != null) {
+                                                          editTextInflatedView.removeAllViews();
+                                                      }
                                                   }
                                               } else {
                                                   editTextInflatedView.removeAllViews();
@@ -366,7 +372,7 @@ public class DynamicFragment extends Fragment {
                         if (max < Integer.parseInt(s.toString()) || Integer.parseInt(s.toString()) < min) {
                             commonInterface.hideNext();
                             BaseActivity baseActivity = (BaseActivity) getActivity();
-                            baseActivity.messageToast("Antre yon nimewo/kantite antre " + max + " a " + min + ".");
+                            baseActivity.messageToast("Antre yon nimewo/kantite antre " + min + " a " + max + ".");
                         } else {
                             editTextAnswers.put(position, s.toString());
                             Object status = questionsModel.getAnswers().get(position).getOptionStatus();
@@ -486,6 +492,7 @@ public class DynamicFragment extends Fragment {
 
 
     private void checkBox_radio() {
+        editTextIds.clear();
         checkboxlist = new ConcurrentHashMap<>();
         checkBoxAnswers = new ArrayList<>();
         checkBoxCheck();
@@ -507,8 +514,27 @@ public class DynamicFragment extends Fragment {
                     checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                            generateEt();
-                            commonInterface.hideNext();
+                            if (isChecked) {
+                                for (View radioButton : editTextIds) {
+                                    ((RadioButton) radioButton).setChecked(false);
+                                }
+                                commonInterface.hideNext();
+                                if (!checkboxlist.isEmpty()) {
+                                    for (Integer id : checkboxlist.keySet()) {
+                                        CheckBox checkBox = checkboxlist.get(id);
+                                        checkBox.setChecked(false);
+                                    }
+                                    if (editTextInflatedView != null) {
+                                        editTextInflatedView.removeAllViews();
+                                    }
+                                    checkboxlist.put(buttonView.getId(), (CheckBox) buttonView);
+                                    checkBoxAnswers.clear();
+                                }
+                                generateEt();
+                            } else {
+                                checkboxlist.remove(buttonView.getId());
+                                editTextInflatedView.removeAllViews();
+                            }
                         }
                     });
                 } else
@@ -517,6 +543,9 @@ public class DynamicFragment extends Fragment {
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                             String value = (String) buttonView.getTag();
                             if (isChecked) {
+                                for (View radioButton : editTextIds) {
+                                    ((RadioButton) radioButton).setChecked(false);
+                                }
                                 if (otherCheckBox != null) {
                                     otherCheckBox.setChecked(false);
                                 }
@@ -541,6 +570,7 @@ public class DynamicFragment extends Fragment {
                 rb[i].setText(Html.fromHtml(questionsModel.getAnswers().get(i).getOptionText()));
                 rb[i].setId(i + 100);
                 rb[i].setTag(i);
+                editTextIds.add(rb[i]);
                 if (suveryAnswer != null)
                     if (questionsModel.getAnswers().get(i).getOptionValue().equals(suveryAnswer.getAnswer())) {
                         ((RadioButton) rg.getChildAt(i)).setChecked(true);
@@ -554,7 +584,6 @@ public class DynamicFragment extends Fragment {
                     RadioButton checkedRadioButton = (RadioButton) rg.findViewById(checkedId);
                     boolean isChecked = checkedRadioButton.isChecked();
                     if (isChecked) {
-
                         int position = (Integer) checkedRadioButton.getTag();
                         if (questionsModel.getAnswers().get(position).getOptionPrompt() != null)
                             showDialogMessage(questionsModel.getAnswers().get(position).getOptionPrompt().toString());

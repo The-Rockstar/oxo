@@ -72,7 +72,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         findViewById(R.id.next).setOnClickListener(this);
         findViewById(R.id.stop_survey).setOnClickListener(this);
         setUpToolbar();
-//        viewPager.setCurrentItem(executeQuestionId(236));
+        viewPager.setCurrentItem(executeQuestionId(472));
     }
 
     private void resumeSurvey(String surveyID, String isOne) {
