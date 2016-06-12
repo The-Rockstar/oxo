@@ -106,14 +106,17 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
     View.OnClickListener resumeSurvey = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            switch ((int) v.getTag()) {
-                case 0:
-                    alertBuilder(sOneKeys);
-                    break;
-                case 1:
-                    alertBuilder(sTwoKeys);
-                    break;
-            }
+            Intent intent = new Intent(ControlActivity.this, ResumeActivity.class);
+            startActivity(intent);
+
+//            switch ((int) v.getTag()) {
+//                case 0:
+//                    alertBuilder(sOneKeys);
+//                    break;
+//                case 1:
+//                    alertBuilder(sTwoKeys);
+//                    break;
+//            }
         }
     };
 

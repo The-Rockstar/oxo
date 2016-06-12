@@ -6,13 +6,13 @@ import com.oxo.haiti.model.QuestionsModel;
  * Created by jaswinderwadali on 17/05/16.
  */
 public interface CommonInterface {
-    void getNextPosition(int position, QuestionsModel questionsModel, String answer, boolean isNew, Object status);
+    void getNextPosition(int position, QuestionsModel questionsModel, String answer, boolean isNew, Object status, boolean repeater);
 
     void hideNext();
 
     void hidePrev();
 
-    void questionId(String id);
+    void questionId(String id,QuestionsModel questionsModel,String answer);
 
     String getNextId();
 }

@@ -33,7 +33,6 @@ public class QuestionsModel {
     @Expose
     private String questionMessage;
 
-
     @SerializedName("min")
     @Expose
     private int min = 0;
@@ -47,6 +46,32 @@ public class QuestionsModel {
     @Expose
     private List<Answer> answers = new ArrayList<>();
 
+
+    @SerializedName("pattern")
+    @Expose
+    private String pattern;
+
+    @SerializedName("match_with")
+    @Expose
+    private String match_with;
+
+
+    public String getMatch_with() {
+        return match_with;
+    }
+
+    public void setMatch_with(String match_with) {
+        this.match_with = match_with;
+    }
+
+    public String getPattern() {
+        return pattern;
+    }
+
+
+    public void setPattern(String pattern) {
+        this.pattern = pattern;
+    }
 
     /**
      * @return The questionKey
@@ -218,6 +243,24 @@ public class QuestionsModel {
         @Expose
         private Object optionStatus;
 
+        @SerializedName("repeat")
+        @Expose
+        private boolean repeat;
+
+        /**
+         * @return The questionKey
+         */
+        public boolean isRepeater() {
+            return repeat;
+        }
+
+        /**
+         * @param repeat The question_key
+         *               this will false if there is no param in json form api
+         */
+        public void setRepeat(boolean repeat) {
+            this.repeat = repeat;
+        }
 
         /**
          * @return The optionType
@@ -323,6 +366,7 @@ public class QuestionsModel {
         public Object getOptionStatus() {
             return optionStatus;
         }
+
         /**
          * @param optionStatus The question_key
          */

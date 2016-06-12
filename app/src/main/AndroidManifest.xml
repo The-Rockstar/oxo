@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.oxo.haiti">
+    package="com.oxo.haiti"
+    android:versionCode="4"
+    android:versionName="1.4">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -13,10 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-
             android:name=".ui.activity.ControlActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppThemeNoAction"></activity>
+            android:theme="@style/AppThemeNoAction" />
         <activity
             android:name=".ui.activity.AuthActivity"
             android:screenOrientation="portrait">
@@ -38,7 +39,9 @@
         <activity
             android:name=".ui.activity.FragmentControler"
             android:screenOrientation="portrait"
-            android:theme="@style/AppThemeNoAction"></activity>
+            android:theme="@style/AppThemeNoAction" />
+        <activity android:name=".ui.activity.SurveyTwo" />
+        <activity android:name=".ui.activity.ResumeActivity"></activity>
     </application>
 
 </manifest>

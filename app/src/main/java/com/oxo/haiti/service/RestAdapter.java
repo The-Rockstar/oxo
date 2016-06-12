@@ -16,11 +16,20 @@ public class RestAdapter {
 
     private ApiService apiService;
 
+    private ApiServiceMain apiServiceMain;
+
     private RestAdapter(Context context) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(context.getString(R.string.base_url))
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
+
+//        Retrofit retrofitMain = new Retrofit.Builder()
+//                .baseUrl(context.getString(R.string.base_url_main))
+//                .addConverterFactory(GsonConverterFactory.create())
+//                .build();
+
+//        apiServiceMain = retrofitMain.create(ApiServiceMain.class);
         apiService = retrofit.create(ApiService.class);
     }
 
@@ -33,4 +42,8 @@ public class RestAdapter {
     public ApiService getApiService() {
         return apiService;
     }
+
+//    public ApiServiceMain getApiServiceMain() {
+////        return apiServiceMain;
+////    }
 }

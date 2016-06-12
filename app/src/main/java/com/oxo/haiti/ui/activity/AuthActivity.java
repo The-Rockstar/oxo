@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.oxo.haiti.R;
 import com.oxo.haiti.model.QuestionsModel;
-import com.oxo.haiti.model.UsersModel;
+import com.oxo.haiti.model.UserModel;
 import com.oxo.haiti.service.RestAdapter;
 import com.oxo.haiti.storage.ContentStorage;
 import com.oxo.haiti.storage.SnappyNoSQL;
@@ -55,16 +55,16 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
 
     private void fetchUsers() {
         showProgress();
-        Call<UsersModel> usersModelCall = RestAdapter.getInstance(this).getApiService().getUsers();
-        usersModelCall.enqueue(new Callback<UsersModel>() {
+        Call<UserModel> usersModelCall = RestAdapter.getInstance(this).getApiService().getUsers();
+        usersModelCall.enqueue(new Callback<UserModel>() {
             @Override
-            public void onResponse(Call<UsersModel> call, Response<UsersModel> response) {
+            public void onResponse(Call<UserModel> call, Response<UserModel> response) {
                 SnappyNoSQL.getInstance().saveUsers(response.body());
                 fetchSurveyOne("1");
             }
 
             @Override
-            public void onFailure(Call<UsersModel> call, Throwable t) {
+            public void onFailure(Call<UserModel> call, Throwable t) {
                 hideBar();
                 messageToast(getString(R.string.retry));
             }
@@ -72,7 +72,12 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void fetchSurveyOne(final String id) {
-        Call<List<QuestionsModel>> usersModelCall = RestAdapter.getInstance(this).getApiService().getFirstSurvey(id);
+        Call<List<QuestionsModel>> usersModelCall;
+        if (id.equals("1"))
+            usersModelCall = RestAdapter.getInstance(this).getApiService().getFirstSurvey(id);
+        else
+            usersModelCall = RestAdapter.getInstance(this).getApiService().getFirstSurvey(id);
+
         usersModelCall.enqueue(new Callback<List<QuestionsModel>>() {
             @Override
             public void onResponse(Call<List<QuestionsModel>> call, Response<List<QuestionsModel>> response) {
@@ -92,8 +97,6 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
                 messageToast(getString(R.string.retry));
             }
         });
-
-
     }
 
     private void changeStatus(boolean status) {

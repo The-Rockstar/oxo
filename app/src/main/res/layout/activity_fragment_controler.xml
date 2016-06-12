@@ -33,8 +33,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="50dp"
                 android:background="@color/appColor"
+                android:layout_weight="1"
+                android:textSize="@dimen/text_size"
                 android:drawableLeft="@drawable/back_50dp"
-                android:gravity="center"
+                android:gravity="left|center"
                 android:padding="5dp"
                 android:text="@string/prev"
                 android:textColor="@android:color/white"
@@ -43,10 +45,11 @@
             <TextView
                 android:id="@+id/stop_survey"
                 android:layout_width="wrap_content"
+
+                android:textSize="@dimen/text_size"
                 android:layout_height="50dp"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
-                android:layout_weight="1"
                 android:background="@color/orange"
                 android:gravity="center"
                 android:padding="5dp"
@@ -59,9 +62,12 @@
                 android:layout_height="50dp"
                 android:background="@color/appColor"
                 android:drawableRight="@drawable/next_50dp"
-                android:gravity="center"
+                android:gravity="right|center"
                 android:padding="5dp"
+                android:layout_weight="1"
                 android:text="@string/kontinye"
+
+                android:textSize="@dimen/text_size"
                 android:textColor="@android:color/white"
                 android:visibility="invisible" />
         </LinearLayout>
@@ -88,6 +94,7 @@
 
         <TextView
             android:layout_width="wrap_content"
+            android:textSize="@dimen/text_size"
             android:layout_height="wrap_content"
             android:drawableTop="@drawable/ic_offline_pin_black_24dp"
             android:gravity="center"

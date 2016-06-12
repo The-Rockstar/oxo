@@ -9,8 +9,13 @@ import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.oxo.haiti.R;
+import com.oxo.haiti.model.AreaModel;
+import com.oxo.haiti.model.RtfModel;
 import com.oxo.haiti.storage.ContentStorage;
 import com.oxo.haiti.storage.SnappyNoSQL;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by wadali on 5/17/2016.
@@ -78,6 +83,18 @@ public abstract class BaseActivity extends AppCompatActivity implements DialogIn
         ContentStorage.getInstance(this).savePositionSurveyOne(0, key);
         SnappyNoSQL.getInstance().removeSaveState(key);
         SnappyNoSQL.getInstance().removeStack(key);
+    }
+
+    protected void removePerson(String key, String Name) {
+        AreaModel areaModel = SnappyNoSQL.getInstance().getArea(key);
+        List<RtfModel> rtfModels = new ArrayList<>(areaModel.getMemberRtfModels());
+        for (RtfModel rtfModel : rtfModels) {
+            if (rtfModel.getName().equals(Name)) {
+                areaModel.getMemberRtfModels().remove(rtfModel);
+            }
+        }
+        SnappyNoSQL.getInstance().saveArea(areaModel, key);
+
     }
 
 

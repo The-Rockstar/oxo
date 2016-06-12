@@ -3,6 +3,7 @@ package com.oxo.haiti.adapter;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.view.View;
 
@@ -16,7 +17,7 @@ import java.util.List;
 /**
  * Created by jaswinderwadali on 17/05/16.
  */
-public class QuestionAdapter extends FragmentStatePagerAdapter {
+public class QuestionAdapter extends FragmentPagerAdapter {
 
     private List<QuestionsModel> questionsModels;
     private CommonInterface commonInterface;
@@ -46,13 +47,6 @@ public class QuestionAdapter extends FragmentStatePagerAdapter {
     }
 
 
-    @Override
-    public boolean isViewFromObject(View view, Object object) {
-        return ((Fragment) object).getView() == view;
-    }
 
-    @Override
-    public int getItemPosition(Object object) {
-        return super.getItemPosition(object);
-    }
+
 }

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by jaswinderwadali on 5/17/2016.
  */
-public class UsersModel  implements Serializable{
+public class UserModel implements Serializable{
 
     @SerializedName("status")
     @Expose

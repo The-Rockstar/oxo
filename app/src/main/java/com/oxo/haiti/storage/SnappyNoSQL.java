@@ -1,18 +1,18 @@
 package com.oxo.haiti.storage;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 
-import com.google.gson.reflect.TypeToken;
 import com.oxo.haiti.model.AnswerModel;
+import com.oxo.haiti.model.AreaModel;
 import com.oxo.haiti.model.QuestionsModel;
-import com.oxo.haiti.model.UsersModel;
+import com.oxo.haiti.model.RtfModel;
+import com.oxo.haiti.model.UserModel;
 import com.snappydb.DB;
 import com.snappydb.SnappyDB;
 import com.snappydb.SnappydbException;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
@@ -56,10 +56,10 @@ public class SnappyNoSQL {
         }
     }
 
-    public void saveUsers(UsersModel usersModel) {
+    public void saveUsers(UserModel usersModel) {
         try {
             snappyDB.put(ROW, usersModel);
-            for (UsersModel.User user : usersModel.getUsers()) {
+            for (UserModel.User user : usersModel.getUsers()) {
                 snappyDB.put(user.getUsername(), user);
             }
         } catch (SnappydbException e) {
@@ -109,7 +109,7 @@ public class SnappyNoSQL {
     public boolean loginAuth(String userName, String password) {
         try {
             if (snappyDB.exists(userName)) {
-                UsersModel.User user = snappyDB.get(userName, UsersModel.User.class);
+                UserModel.User user = snappyDB.get(userName, UserModel.User.class);
                 return user.getPassword().equals(password);
             }
         } catch (SnappydbException e) {
@@ -119,10 +119,10 @@ public class SnappyNoSQL {
     }
 
 
-    public UsersModel getUsers() {
+    public UserModel getUsers() {
         try {
             if (snappyDB.exists(ROW))
-                return snappyDB.get(ROW, UsersModel.class);
+                return snappyDB.get(ROW, UserModel.class);
         } catch (SnappydbException e) {
             e.printStackTrace();
         }
@@ -327,4 +327,84 @@ public class SnappyNoSQL {
         }
         return new ArrayList<>();
     }
+
+
+    public void saveArea(AreaModel answerModel, String key) {
+        try {
+            List<RtfModel> rtfModels = answerModel.getMemberRtfModels();
+            if (rtfModels.size() > 1) {
+                Collections.shuffle(rtfModels);
+                List<RtfModel> temp = new ArrayList<>();
+                temp.add(rtfModels.get(0));
+                temp.add(rtfModels.get(1));
+                rtfModels.clear();
+                answerModel.setMemberRtfModels(temp);
+            }
+            snappyDB.put("AREA" + key, answerModel);
+            storeKeyArea(key);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            storeKey(key);
+        }
+    }
+
+    public AreaModel getArea(String key) {
+        try {
+            if (snappyDB.exists("AREA" + key))
+                return snappyDB.get("AREA" + key, AreaModel.class);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void removeArea(String key) {
+        try {
+            if (snappyDB.exists("AREA" + key))
+                snappyDB.del("AREA" + key);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        } finally {
+            removeKeyArea(key);
+        }
+    }
+
+
+    private void storeKeyArea(String key) {
+        try {
+            List<String> keys = getKeysArea();
+            if (!keys.contains(key))
+                keys.add(key);
+            snappyDB.put("AREA_KEY" + KEYSTORE, keys);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void removeKeyArea(String key) {
+        try {
+            if (snappyDB.exists("AREA_KEY" + KEYSTORE)) {
+                List<String> keys = getKeysArea();
+                keys.remove(key);
+                snappyDB.put("AREA_KEY" + KEYSTORE, keys);
+            }
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<String> getKeysArea() {
+        try {
+            if (snappyDB.exists("AREA_KEY" + KEYSTORE))
+                return snappyDB.get("AREA_KEY" + KEYSTORE, ArrayList.class);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+
+
 }
