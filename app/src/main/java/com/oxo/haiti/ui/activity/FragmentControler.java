@@ -59,10 +59,6 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-//        if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
-//            executeAnswers();
-//            SnappyNoSQL.getInstance().saveArea(areaModel, key);
-//        }
         super.onDestroy();
     }
 
@@ -89,7 +85,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         findViewById(R.id.next).setOnClickListener(this);
         findViewById(R.id.stop_survey).setOnClickListener(this);
         setUpToolbar();
-//        viewPager.setCurrentItem(executeQuestionId(472));
+        viewPager.setCurrentItem(executeQuestionId(196));
     }
 
     private void resumeSurvey(String surveyID, String isOne) {
@@ -238,6 +234,10 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 usersModel.setSurveyId(key);
                 usersModel.setUserId("" + new Random().nextInt(99));
                 areaModel.setMemberRtfModels(usersModel);
+            } else if (answer.getQuestionId().equals("hid_2") || answer.getQuestionId().equals("hid_3") || answer.getQuestionId().equals("hid_4") || answer.getQuestionId().equals("hid_5") && !TextUtils.isEmpty(answer.getAnswer())) {
+                areaModel.setBlock(answer.getAnswer());
+            } else if (answer.getQuestionId().equals("hid_7") && !TextUtils.isEmpty(answer.getAnswer())) {
+                areaModel.setHH(answer.getAnswer());
             } else if (answer.getQuestionId().equals("hid_6") && !TextUtils.isEmpty(answer.getAnswer())) {
                 areaModel.setGps(answer.getAnswer());
             } else if (answer.getQuestionId().equals("hid_8") && !TextUtils.isEmpty(answer.getAnswer())) {
@@ -245,9 +245,9 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             } else if (answer.getQuestionId().equals("hid_10") && !TextUtils.isEmpty(answer.getAnswer())) {
                 areaModel.set_long(answer.getAnswer());
             } else if (answer.getQuestionId().equals("hid_14") && !TextUtils.isEmpty(answer.getAnswer())) {
-                areaModel.setDesc(answer.getAnswer());
-            } else if (answer.getQuestionId().equals("hid_15") && !TextUtils.isEmpty(answer.getAnswer())) {
                 areaModel.setName(answer.getAnswer());
+            } else if (answer.getQuestionId().equals("hid_15") && !TextUtils.isEmpty(answer.getAnswer())) {
+                areaModel.setDesc(answer.getAnswer());
             }
         }
     }
@@ -292,7 +292,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 });
 
             }
-        }.execute();
+        }.execute(null, null, null);
     }
 
 
@@ -380,6 +380,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         suveryAnswer.setAnswer(answer);
         suveryAnswer.setNextId(position);
         suveryAnswer.setQuestionId(questionsModel.getQuestionId());
+        Log.d("Q_ID", questionsModel.getQuestionId());
         suveryAnswer.setQuestionKey(questionsModel.getQuestionKey());
         if (isRepeater || localIsRepeater && (repeaterOption == 0) || localIsRepeater) {
             repeaterOption = position;

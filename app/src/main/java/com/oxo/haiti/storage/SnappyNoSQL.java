@@ -332,14 +332,16 @@ public class SnappyNoSQL {
     public void saveArea(AreaModel answerModel, String key) {
         try {
             List<RtfModel> rtfModels = answerModel.getMemberRtfModels();
+            Collections.shuffle(rtfModels);
+            List<RtfModel> temp = new ArrayList<>();
             if (rtfModels.size() > 1) {
-                Collections.shuffle(rtfModels);
-                List<RtfModel> temp = new ArrayList<>();
                 temp.add(rtfModels.get(0));
                 temp.add(rtfModels.get(1));
-                rtfModels.clear();
-                answerModel.setMemberRtfModels(temp);
+            } else {
+                temp.addAll(rtfModels);
             }
+            rtfModels.clear();
+            answerModel.setMemberRtfModels(temp);
             snappyDB.put("AREA" + key, answerModel);
             storeKeyArea(key);
         } catch (SnappydbException e) {
@@ -348,6 +350,7 @@ public class SnappyNoSQL {
             e.printStackTrace();
         } finally {
             storeKey(key);
+
         }
     }
 

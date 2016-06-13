@@ -78,6 +78,9 @@ public class ResumeActivity extends AppCompatActivity {
             TextView block = (TextView) linearLayout.findViewById(R.id.block);
             TextView hh = (TextView) linearLayout.findViewById(R.id.hh);
             TextView indu = (TextView) linearLayout.findViewById(R.id.ind);
+            final LinearLayout linearLayout1 = (LinearLayout) linearLayout.findViewById(R.id.mainlayout_one);
+            final LinearLayout linearLayout2 = (LinearLayout) linearLayout.findViewById(R.id.mainlayout_two);
+
 
             final TextView one = (TextView) linearLayout.findViewById(R.id.one);
             final TextView two = (TextView) linearLayout.findViewById(R.id.two);
@@ -94,9 +97,12 @@ public class ResumeActivity extends AppCompatActivity {
             for (RtfModel users : rtfModels) {
                 if (!one.getText().equals(users.getName()) && !TextUtils.isEmpty(users.getName())) {
                     if (count == 0) {
+                        linearLayout1.setVisibility(View.VISIBLE);
                         one.setText(users.getName());
                         one.setTag(areaModel.get(position).get_id());
+
                     } else {
+                        linearLayout2.setVisibility(View.VISIBLE);
                         two.setText(users.getName());
                         two.setTag(areaModel.get(position).get_id());
                     }

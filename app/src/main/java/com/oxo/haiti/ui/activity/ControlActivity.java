@@ -65,7 +65,6 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
         TextView alreadyStartedTwo = (TextView) expandableLayoutTwo.findViewById(R.id.resume_survey);
         alreadyStartedTwo.setText(R.string.alreadystartedtwo);
 
-
         expandableLayoutOne.findViewById(R.id.new_survey).setTag(0);
         expandableLayoutTwo.findViewById(R.id.new_survey).setTag(1);
         expandableLayoutOne.findViewById(R.id.resume_survey).setTag(0);
@@ -76,20 +75,16 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
         expandableLayoutOne.findViewById(R.id.resume_survey).setOnClickListener(resumeSurvey);
         expandableLayoutTwo.findViewById(R.id.resume_survey).setOnClickListener(resumeSurvey);
 
-
         if (sOneKeys.size() > 0) {
             expandableLayoutOne.findViewById(R.id.resume_survey).setVisibility(View.VISIBLE);
         } else {
-            expandableLayoutOne.findViewById(R.id.resume_survey).setVisibility(View.GONE);
-
+            expandableLayoutOne.findViewById(R.id.resume_survey).setVisibility(View.VISIBLE);
         }
 
-
-        if (sTwoKeys.size() > 0) {
+        if (SnappyNoSQL.getInstance().getKeysArea().size() > 0) {
             expandableLayoutTwo.findViewById(R.id.resume_survey).setVisibility(View.VISIBLE);
         } else {
-            expandableLayoutTwo.findViewById(R.id.resume_survey).setVisibility(View.GONE);
-
+            expandableLayoutTwo.findViewById(R.id.resume_survey).setVisibility(View.VISIBLE);
         }
 
 
@@ -108,15 +103,6 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
         public void onClick(View v) {
             Intent intent = new Intent(ControlActivity.this, ResumeActivity.class);
             startActivity(intent);
-
-//            switch ((int) v.getTag()) {
-//                case 0:
-//                    alertBuilder(sOneKeys);
-//                    break;
-//                case 1:
-//                    alertBuilder(sTwoKeys);
-//                    break;
-//            }
         }
     };
 
