@@ -86,14 +86,18 @@ public abstract class BaseActivity extends AppCompatActivity implements DialogIn
     }
 
     protected void removePerson(String key, String Name) {
-        AreaModel areaModel = SnappyNoSQL.getInstance().getArea(key);
-        List<RtfModel> rtfModels = new ArrayList<>(areaModel.getMemberRtfModels());
-        for (RtfModel rtfModel : rtfModels) {
-            if (rtfModel.getName().equals(Name)) {
-                areaModel.getMemberRtfModels().remove(rtfModel);
+        try {
+            AreaModel areaModel = SnappyNoSQL.getInstance().getArea(key);
+            List<RtfModel> rtfModels = new ArrayList<>(areaModel.getMemberRtfModels());
+            for (RtfModel rtfModel : rtfModels) {
+                if (rtfModel.getName().equals(Name)) {
+                    areaModel.getMemberRtfModels().remove(rtfModel);
+                }
             }
+            SnappyNoSQL.getInstance().saveArea(areaModel, key);
+        } catch (Exception e) {
+
         }
-        SnappyNoSQL.getInstance().saveArea(areaModel, key);
 
     }
 

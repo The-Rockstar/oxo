@@ -1,9 +1,11 @@
 package com.oxo.haiti.service;
 
 import com.oxo.haiti.model.CommonModel;
+import com.oxo.haiti.model.Condition;
 import com.oxo.haiti.model.QuestionsModel;
 import com.oxo.haiti.model.UserModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -26,6 +28,12 @@ public interface ApiService {
 
     @FormUrlEncoded
     @POST("?action=export&apikey=CAX4RYDJBUKM8BSYQEZP")
-    Call<CommonModel> syncData(@Field("data") String data);
+    Call<Object> syncData(@Field("data") String data);
+
+
+
+    @GET("?action=import&apikey=CAX4RYDJBUKM8BSYQEZP")
+    Call<List<Condition>> getConditions(@Query("id") String id);
+
 
 }

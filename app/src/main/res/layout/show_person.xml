@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:id="@+id/namelayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_weight="1">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="@dimen/text_size"
+
+            android:text="non" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sexlayout"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:textSize="@dimen/text_size"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:text="seks" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/agelayout"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <TextView
+            android:textSize="@dimen/text_size"
+            android:layout_width="match_parent"
+            android:gravity="center|top"
+            android:layout_height="wrap_content"
+            android:text="laj" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

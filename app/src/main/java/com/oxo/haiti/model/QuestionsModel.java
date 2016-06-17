@@ -55,6 +55,17 @@ public class QuestionsModel {
     @Expose
     private String match_with;
 
+    @SerializedName("hh_single")
+    @Expose
+    private boolean hh_single;
+
+    public boolean isHh_single() {
+        return hh_single;
+    }
+
+    public void setHh_single(boolean hh_single) {
+        this.hh_single = hh_single;
+    }
 
     public String getMatch_with() {
         return match_with;

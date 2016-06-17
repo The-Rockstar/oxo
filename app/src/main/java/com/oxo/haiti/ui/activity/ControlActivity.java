@@ -33,6 +33,14 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent intent = new Intent(this, FragmentControler.class);
+        intent.putExtra("key", "asdsad");
+        intent.putExtra("SURVEY", "TWO");
+        intent.putExtra("mainId", "asdsad");
+        intent.putExtra("Name", "jas");
+//        startActivity(intent);
+
         setContentView(R.layout.activity_main);
         setUpToolbar();
     }

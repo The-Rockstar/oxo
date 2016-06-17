@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.oxo.haiti.model.AnswerModel;
 import com.oxo.haiti.model.AreaModel;
+import com.oxo.haiti.model.Condition;
 import com.oxo.haiti.model.QuestionsModel;
 import com.oxo.haiti.model.RtfModel;
 import com.oxo.haiti.model.UserModel;
@@ -93,6 +94,26 @@ public class SnappyNoSQL {
             e.printStackTrace();
         }
     }
+
+    public void saveSurveyQuestionsFour(List<QuestionsModel> questionsModels) {
+        try {
+            snappyDB.put("FOUR" + SURVEY_TWO, questionsModels);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<QuestionsModel> getSurveyQuestionsFour() {
+        try {
+            if (snappyDB.exists("FOUR" + SURVEY_TWO))
+                return snappyDB.get("FOUR" + SURVEY_TWO, ArrayList.class);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
 
     public List<QuestionsModel> getSurveyQuestionsTwo() {
         try {
@@ -329,7 +350,7 @@ public class SnappyNoSQL {
     }
 
 
-    public void saveArea(AreaModel answerModel, String key) {
+    public AreaModel saveArea(AreaModel answerModel, String key) {
         try {
             List<RtfModel> rtfModels = answerModel.getMemberRtfModels();
             Collections.shuffle(rtfModels);
@@ -352,6 +373,7 @@ public class SnappyNoSQL {
             storeKey(key);
 
         }
+        return answerModel;
     }
 
     public AreaModel getArea(String key) {
@@ -407,6 +429,26 @@ public class SnappyNoSQL {
             e.printStackTrace();
         }
         return new ArrayList<>();
+    }
+
+
+    public void saveConditions(List<Condition> answerModel) {
+        try {
+            snappyDB.put("CONDITIONS", answerModel);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        } finally {
+        }
+    }
+
+    public List<Condition> getConditions() {
+        try {
+            if (snappyDB.exists("CONDITIONS"))
+                return snappyDB.get("CONDITIONS", ArrayList.class);
+        } catch (SnappydbException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 

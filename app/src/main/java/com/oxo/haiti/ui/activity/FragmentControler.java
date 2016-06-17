@@ -21,7 +21,7 @@ import com.oxo.haiti.R;
 import com.oxo.haiti.adapter.QuestionAdapter;
 import com.oxo.haiti.model.AnswerModel;
 import com.oxo.haiti.model.AreaModel;
-import com.oxo.haiti.model.CommonModel;
+import com.oxo.haiti.model.PersonModel;
 import com.oxo.haiti.model.QuestionsModel;
 import com.oxo.haiti.model.RtfModel;
 import com.oxo.haiti.service.RestAdapter;
@@ -42,6 +42,7 @@ import retrofit2.Response;
 
 public class FragmentControler extends BaseActivity implements View.OnClickListener, CommonInterface {
 
+    public static int childCount = 0;
     private ViewPager viewPager;
     private QuestionAdapter questionAdapter;
     private int nextPosition;
@@ -55,6 +56,9 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     private boolean isRepeater = false;
     private int repeaterOption;
     private AreaModel areaModel = new AreaModel();
+    public static int loopOne = 1, loopTwo = 1, loopThree = 1, loopFour = 1;
+    List<PersonModel> personModels = new ArrayList<>();
+    public static boolean isLoaded = false;
 
 
     @Override
@@ -74,6 +78,12 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             resumeSurvey("1", key);
             setUpAdapter();
             viewPager.setCurrentItem(ContentStorage.getInstance(this).getPositionSurveyOne(key));
+        } else if (getIntent().getExtras().getString("SURVEY").equals("FOUR")) {
+            findViewById(R.id.stop_survey).setVisibility(View.INVISIBLE);
+            findViewById(R.id.prev).setVisibility(View.GONE);
+            questionsModelList = SnappyNoSQL.getInstance().getSurveyQuestionsFour();
+            resumeSurvey("3", key);
+            setUpAdapter();
         } else {
             questionsModelList = SnappyNoSQL.getInstance().getSurveyQuestionsTwo();
             resumeSurvey("2", key);
@@ -85,7 +95,11 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         findViewById(R.id.next).setOnClickListener(this);
         findViewById(R.id.stop_survey).setOnClickListener(this);
         setUpToolbar();
-        viewPager.setCurrentItem(executeQuestionId(196));
+//        viewPager.setCurrentItem(executeQuestionId(100));
+    }
+
+    public List<QuestionsModel> getQuestionsModelList() {
+        return questionsModelList;
     }
 
     private void resumeSurvey(String surveyID, String isOne) {
@@ -105,6 +119,10 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     public AreaModel getAreaModel() {
         executeAnswers();
         return areaModel;
+    }
+
+    public AreaModel saveAreax() {
+        return SnappyNoSQL.getInstance().saveArea(areaModel, key);
     }
 
     private void newObject(String surveyID) {
@@ -159,7 +177,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         getNextPosition(suveryAnswer.getNextId(), questionsModelList.get(position), suveryAnswer.getAnswer(), false, null, false);
                     }
                 }
-                if (questionsModelList.get(position).getQuestionType().equals("message") || questionsModelList.get(position).getQuestionType().equals("hh_profile")) {
+                if (questionsModelList.get(position).getQuestionType().equals("message") || questionsModelList.get(position).getQuestionType().equals("hh_profile") || questionsModelList.get(position).getQuestionType().equals("hh_person") || questionsModelList.get(position).getQuestionType().equals("hh_children")) {
                     getNextPosition(questionsModelList.get(position).getAnswers().get(0).getOptionNext(), questionsModelList.get(position), "READ", false, questionsModelList.get(position).getAnswers().get(0).getOptionStatus(), false);
                 }
             }
@@ -196,6 +214,12 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     }
                     viewPager.setCurrentItem(nextPosition);
                 } else {
+                    List<AnswerModel.SuveryAnswer> answers = answerModel.getSuveryAnswers();
+                    answers.add(suveryAnswer);
+                    if (!prevSteps.contains(nextPosition)) {
+                        prevSteps.push(nextPosition);
+                    }
+                    viewPager.setCurrentItem(nextPosition);
                     backgroundStart();
                 }
                 break;
@@ -224,10 +248,51 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     }
 
 
-    void executeAnswers() {
+    public List<PersonModel> getPersonModels() {
+        executeAnswers();
+        return personModels;
+    }
+
+    public void executeAnswers() {
+        personModels.clear();
+        loopOne = 0;
+        loopTwo = 0;
+        loopThree = 0;
+        loopFour = 0;
         List<String> stringList = new ArrayList<>();
+        PersonModel personModel = null;
         for (AnswerModel.SuveryAnswer answer : answerModel.getSuveryAnswers()) {
+
             if (answer.getQuestionId().equals("hid_140") && !TextUtils.isEmpty(answer.getAnswer())) {
+                personModel = new PersonModel();
+                personModel.setName(answer.getAnswer());
+                personModel.setTypo("hh_person");
+                personModels.add(personModel);
+
+            }
+            if (answer.getQuestionId().equals("hid_144") && !TextUtils.isEmpty(answer.getAnswer())) {
+                if (personModel != null)
+                    personModel.setSex(answer.getAnswer());
+            }
+            if (answer.getQuestionId().equals("hid_148") && !TextUtils.isEmpty(answer.getAnswer())) {
+                if (personModel != null)
+                    personModel.setAge(answer.getAnswer());
+            }
+
+
+            if (answer.getQuestionId().equals("hid_176") && !TextUtils.isEmpty(answer.getAnswer())) {
+                personModel = new PersonModel();
+                personModel.setSex(answer.getAnswer());
+                personModel.setTypo("hh_children");
+                personModels.add(personModel);
+            }
+            if (answer.getQuestionId().equals("hid_180") && !TextUtils.isEmpty(answer.getAnswer())) {
+                if (personModel != null)
+                    personModel.setAge(answer.getAnswer());
+            }
+
+            if (answer.getQuestionId().equals("hid_140") && !TextUtils.isEmpty(answer.getAnswer())) {
+                loopOne++;
                 stringList.add(answer.getAnswer());
                 RtfModel usersModel = new RtfModel();
                 usersModel.setName(answer.getAnswer());
@@ -236,6 +301,8 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 areaModel.setMemberRtfModels(usersModel);
             } else if (answer.getQuestionId().equals("hid_2") || answer.getQuestionId().equals("hid_3") || answer.getQuestionId().equals("hid_4") || answer.getQuestionId().equals("hid_5") && !TextUtils.isEmpty(answer.getAnswer())) {
                 areaModel.setBlock(answer.getAnswer());
+            } else if (answer.getQuestionId().equals("hid_1") && !TextUtils.isEmpty(answer.getAnswer())) {
+                areaModel.setSit(answer.getAnswer());
             } else if (answer.getQuestionId().equals("hid_7") && !TextUtils.isEmpty(answer.getAnswer())) {
                 areaModel.setHH(answer.getAnswer());
             } else if (answer.getQuestionId().equals("hid_6") && !TextUtils.isEmpty(answer.getAnswer())) {
@@ -248,9 +315,16 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 areaModel.setName(answer.getAnswer());
             } else if (answer.getQuestionId().equals("hid_15") && !TextUtils.isEmpty(answer.getAnswer())) {
                 areaModel.setDesc(answer.getAnswer());
+            } else if (answer.getQuestionId().equals("hid_176") && !TextUtils.isEmpty(answer.getAnswer())) {
+                loopTwo++;
+            } else if (answer.getQuestionId().equals("hid_244") && !TextUtils.isEmpty(answer.getAnswer())) {
+                loopThree++;
+            } else if (answer.getQuestionId().equals("hid_280") && !TextUtils.isEmpty(answer.getAnswer())) {
+                loopFour++;
             }
         }
     }
+
 
     void backgroundStart() {
         new AsyncTask() {
@@ -274,7 +348,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
+                        if (getIntent().getExtras().getString("SURVEY").equals("ONE") || getIntent().getExtras().getString("SURVEY").equals("FOUR")) {
                             executeAnswers();
                             SnappyNoSQL.getInstance().saveArea(areaModel, key);
                             clearSaveState(key);
@@ -302,10 +376,10 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         final String data = new Gson().toJson(answerModel);
         if (answerModel.getSuveryAnswers().size() > 0)
             if (Connectivity.InternetAvailable(this)) {
-                Call<CommonModel> commonModelCall = RestAdapter.getInstance(this).getApiService().syncData(data);
-                commonModelCall.enqueue(new Callback<CommonModel>() {
+                Call commonModelCall = RestAdapter.getInstance(this).getApiService().syncData(data);
+                commonModelCall.enqueue(new Callback() {
                     @Override
-                    public void onResponse(Call<CommonModel> call, Response<CommonModel> response) {
+                    public void onResponse(Call call, Response response) {
                         Log.d("", "onResponse: " + response.message());
                         hideBar();
                         // messageToast("Success  " + response.message());
@@ -313,7 +387,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     }
 
                     @Override
-                    public void onFailure(Call<CommonModel> call, Throwable t) {
+                    public void onFailure(Call call, Throwable t) {
                         Log.d("", "onResponse: Error");
                         SnappyNoSQL.getInstance().saveOfflineSurvey(data);
                         hideBar();
@@ -398,23 +472,11 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     private void fetchViewData(int order, String answer, QuestionsModel questionsModel) {
 
         switch (order) {
-            case 0:
-                areaModel.setSit(answer);
-                break;
-            case 2:
-                areaModel.setBlock(answer);
-                break;
-            case 7:
-                areaModel.setHH(answer);
-                break;
-            case 140:
-                break;
             default:
                 if (!TextUtils.isEmpty(areaModel.getHH())) {
                     SnappyNoSQL.getInstance().saveArea(areaModel, key);
                 }
                 break;
-
         }
 
     }
@@ -471,6 +533,13 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
+
+
+                        Intent intent = new Intent(FragmentControler.this, FragmentControler.class);
+                        intent.putExtra("RESUME", false);
+                        intent.putExtra("key", "StopStatus" + key);
+                        intent.putExtra("SURVEY", "FOUR");
+                        startActivity(intent);
                         pauseSurvey();
                         finish();
 //                        stopSurvey();

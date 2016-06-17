@@ -1,5 +1,6 @@
 package com.oxo.haiti.ui.fargments;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -26,9 +27,14 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.oxo.haiti.R;
+import com.oxo.haiti.adapter.CustomArrayAdapter;
 import com.oxo.haiti.model.AnswerModel;
 import com.oxo.haiti.model.AreaModel;
+import com.oxo.haiti.model.Condition;
+import com.oxo.haiti.model.PersonModel;
 import com.oxo.haiti.model.QuestionsModel;
+import com.oxo.haiti.model.RtfModel;
+import com.oxo.haiti.storage.SnappyNoSQL;
 import com.oxo.haiti.ui.activity.FragmentControler;
 import com.oxo.haiti.ui.base.BaseActivity;
 import com.oxo.haiti.utils.CommonInterface;
@@ -63,7 +69,10 @@ public class DynamicFragment extends Fragment {
     private LinearLayout editTextInflatedView = null;
     private CheckBox otherCheckBox = null;
     private List<View> editTextIds = new ArrayList<>();
-    private Map<Integer, String> editTextAnswers = new HashMap<>();
+    private Map<String, String> editTextAnswers = new HashMap<>();
+    private int dorpDownYear, dropDownmonth;
+    boolean singleSelecter = false;
+    boolean selectedFromSpiner = false;
 
 
     public static DynamicFragment getFragment(int position, CommonInterface commonInterface, QuestionsModel questionsModel, AnswerModel answerModel) {
@@ -106,7 +115,7 @@ public class DynamicFragment extends Fragment {
                         else if (questionsModel.getQuestionType().equals("number_radio"))
                             dynamicTextInput();
                         else if (questionsModel.getQuestionType().equals("number_number_radio"))
-                            dynamicTextInput();
+                            populateBoth();
                         else if (questionsModel.getQuestionType().equals("text_text"))
                             dynamicTextInput();
                         else if (questionsModel.getQuestionType().equals("text_text_radio"))
@@ -119,15 +128,136 @@ public class DynamicFragment extends Fragment {
                             populateBoth();
                         else if (questionsModel.getQuestionType().equals("hh_profile"))
                             showAreaView();
+                        else if (questionsModel.getQuestionType().equals("hh_person"))
+                            showPerson("hh_person");
+                        else if (questionsModel.getQuestionType().equals("hh_children"))
+                            showPerson("hh_children");
+                        else if (questionsModel.getQuestionType().equals("radio_radio_radio_radio_radio_radio"))
+                            genrateRadioGroups();
                         else
                             generateEt();
 
 
-                        if (!TextUtils.isEmpty(questionsModel.getQuestionDesc()))
-                            questionDec.setText(Html.fromHtml(questionsModel.getQuestionDesc()));
+                        if (questionsModel.getQuestionId().equals("hid_304")) {
+                            if (FragmentControler.childCount == 1) {
+                                for (QuestionsModel.Answer answer : questionsModel.getAnswers())
+                                    answer.setOptionNext(305);
+                            }
+                        }
+
+                        if (questionsModel.getQuestionId().equals("hid_304")) {
+                            if (FragmentControler.childCount == 0) {
+                                for (QuestionsModel.Answer answer : questionsModel.getAnswers())
+                                    answer.setOptionNext(365);
+                            }
+                        }
+
+                        if (questionsModel.getQuestionId().equals("hid_328")) {
+                            if (FragmentControler.childCount == 2 && !FragmentControler.isLoaded) {
+                                for (QuestionsModel.Answer answer : questionsModel.getAnswers())
+                                    answer.setOptionNext(308);
+                                FragmentControler.isLoaded = true;
+                            }
+                        }
+
+                        List<Condition> conditions = SnappyNoSQL.getInstance().getConditions();
+                        for (Condition condition : conditions) {
+                            if (questionsModel.getQuestionId().equals(condition.getKey())) {
+                                for (AnswerModel.SuveryAnswer answer : answerModel.getSuveryAnswers()) {
+                                    for (Condition.ConditionMode conditionMode : condition.getValue().getConditions()) {
+                                        if (answer.getQuestionId().equals(conditionMode.getQuestionOrder())) {
+                                            if (conditionMode.getCompare().equals("==")) {
+                                                if (Integer.parseInt(answer.getAnswer()) == conditionMode.getValue()) {
+                                                    for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
+                                                        answer1.setOptionNext(condition.getValue().getQuestionNext());
+                                                    }
+                                                }
+                                            } else if (conditionMode.getCompare().equals("<")) {
+                                                if (Integer.parseInt(answer.getAnswer()) < conditionMode.getValue()) {
+                                                    for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
+                                                        answer1.setOptionNext(condition.getValue().getQuestionNext());
+                                                    }
+                                                }
+                                            } else if (conditionMode.getCompare().equals(">")) {
+                                                if (Integer.parseInt(answer.getAnswer()) > conditionMode.getValue()) {
+                                                    for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
+                                                        answer1.setOptionNext(condition.getValue().getQuestionNext());
+                                                    }
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!TextUtils.isEmpty(questionsModel.getQuestionText())) {
+
+                            String source = questionsModel.getQuestionText();
+                            if (questionsModel.getQuestionOrder() == 365) {
+                                FragmentControler fragmentControler1 = (FragmentControler) getActivity();
+                                fragmentControler1.getAreaModel();
+                                AreaModel areaModel = fragmentControler.saveAreax();
+                                List<RtfModel> rtfModels = areaModel.getMemberRtfModels();
+                                String s = "";
+                                if (rtfModels.size() > 0) {
+                                    s = rtfModels.get(0).getName();
+
+                                    if (rtfModels.size() > 1 && !rtfModels.get(1).getName().equals(rtfModels.get(0).getName())) {
+                                        s = s.concat(" epi ");
+                                        s = s.concat(rtfModels.get(1).getName());
+                                    }
+                                }
+
+                                s = source.replace("random_selected_persons", s);
+                                headerTextView.setText(Html.fromHtml(s));
+
+                            } else if (source.contains("#current_person#")) {
+                                source = source.replace("#current_person#", getActivity().getIntent().getStringExtra("Name"));
+                                headerTextView.setText(Html.fromHtml(source));
+                            } else if (source.contains("#n1#") || source.contains("#n2#") || source.contains("#n3#") || source.contains("#n4#")) {
+                                FragmentControler fragmentControler1 = (FragmentControler) getActivity();
+                                fragmentControler1.executeAnswers();
+                                if (source.contains("#n1#")) {
+                                    if (questionsModel.getQuestionId().equals("hid_140")) {
+                                        int count = FragmentControler.loopOne + 1;
+                                        source = source.replace("#n1#", count + "");
+                                    } else
+                                        source = source.replace("#n1#", FragmentControler.loopOne == 0 ? "" + 1 : "" + FragmentControler.loopOne);
+
+                                } else if (source.contains("#n2#")) {
+                                    if (questionsModel.getQuestionId().equals("hid_176")) {
+                                        int count = FragmentControler.loopTwo + 1;
+                                        source = source.replace("#n2#", count + "");
+                                    } else
+                                        source = source.replace("#n2#", FragmentControler.loopTwo == 0 ? "" + 1 : "" + FragmentControler.loopTwo);
+                                } else if (source.contains("#n3#")) {
+                                    if (questionsModel.getQuestionId().equals("hid_244")) {
+                                        int count = FragmentControler.loopThree + 1;
+                                        source = source.replace("#n3#", count + "");
+                                    } else
+                                        source = source.replace("#n3#", FragmentControler.loopThree == 0 ? "" + 1 : "" + FragmentControler.loopThree);
+                                } else if (source.contains("#n4#")) {
+                                    if (questionsModel.getQuestionId().equals("hid_280")) {
+                                        int count = FragmentControler.loopFour + 1;
+                                        source = source.replace("#n4#", count + "");
+                                    } else
+                                        source = source.replace("#n4#", FragmentControler.loopFour == 0 ? "" + 1 : "" + FragmentControler.loopFour);
+                                }
+                                headerTextView.setText(Html.fromHtml(source));
+
+                            } else
+                                headerTextView.setText(Html.fromHtml(source));
+                        }
+                        if (!TextUtils.isEmpty(questionsModel.getQuestionDesc())) {
+                            questionDec.setText(questionsModel.getQuestionDesc());
+                        }
+                        showBloodPresure();
+
                     } catch (Exception e) {
                         Log.d("Exception", e.getMessage());
-                        showDialogMessage("Something went wrong need to contact developer");
+                        // showDialogMessage("Something went wrong need to contact developer");
                     } finally {
                     }
 
@@ -136,6 +266,86 @@ public class DynamicFragment extends Fragment {
             }, 500);
         } else {
         }
+    }
+
+
+    private void genrateRadioGroups() {
+
+        try {
+            List<QuestionsModel.Answer> answer = questionsModel.getAnswers();
+            generateRadio(answer.subList(0, 6), 1, "a)Nève / Eksite");
+            generateRadio(answer.subList(6, 12), 2, "b) Dekouraje / Dezespere");
+            generateRadio(answer.subList(12, 18), 3, "c) Ajite");
+            generateRadio(answer.subList(18, 24), 4, "d) Dekouraje tèlman ke anyen pa enterese m");
+            generateRadio(answer.subList(24, 30), 5, "e) Tout bagay te paret difisil pou ou");
+            generateRadio(answer.subList(30, 36), 6, "f) Repliye sou mwenmenm, oubyen santi m’ san valè");
+        } catch (Exception e) {
+
+        }
+
+
+    }
+
+
+    private void generateRadio(final List<QuestionsModel.Answer> pickeranswer, int x, String jas) {
+
+        TextView textView = new TextView(getContext());
+        textView.setId(new Random().nextInt());
+
+        textView.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+        textView.setText(jas);
+        answerContainer.addView(textView);
+        final RadioButton[] rb = new RadioButton[pickeranswer.size()];
+        final RadioGroup rg = new RadioGroup(getContext());
+        rg.setId(x * 13 + 1);
+        //create the RadioGroup
+        rg.setOrientation(RadioGroup.VERTICAL);//or RadioGroup.VERTICAL
+        for (int i = 0; i < pickeranswer.size(); i++) {
+            rb[i] = new RadioButton(getContext());
+            rg.addView(rb[i]);
+            rb[i].setText(Html.fromHtml(pickeranswer.get(i).getOptionText()));
+            rb[i].setId(i + 100 + x);
+            rb[i].setTag(i);
+            rb[i].setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+
+            if (suveryAnswer != null)
+                if (pickeranswer.get(i).getOptionValue().equals(suveryAnswer.getAnswer())) {
+                    ((RadioButton) rg.getChildAt(i)).setChecked(true);
+                }
+
+        }
+        rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                                          @Override
+                                          public void onCheckedChanged(RadioGroup group, int checkedId) {
+                                              RadioButton checkedRadioButton = (RadioButton) rg.findViewById(checkedId);
+                                              boolean isChecked = checkedRadioButton.isChecked();
+                                              if (isChecked) {
+                                                  int position = (Integer) checkedRadioButton.getTag();
+                                                  if (pickeranswer.get((Integer) checkedRadioButton.getTag()).getOptionPrompt() != null)
+                                                      showDialogMessage(pickeranswer.get((Integer) checkedRadioButton.getTag()).getOptionPrompt().toString());
+                                                  int radioPosition = (Integer) checkedRadioButton.getTag();
+                                                  Object status = pickeranswer.get(radioPosition).getOptionStatus();
+                                                  commonInterface.getNextPosition(pickeranswer.get(radioPosition).getOptionNext(), questionsModel, pickeranswer.get(radioPosition).getOptionValue(), true, status, pickeranswer.get(position).isRepeater());
+                                                  if (!TextUtils.isEmpty(pickeranswer.get(position).getOptionValue()) && pickeranswer.get(position).getOptionValue().equals("66")) {
+                                                      commonInterface.hideNext();
+                                                      if (editTextInflatedView != null) {
+                                                          editTextInflatedView.removeAllViews();
+                                                      }
+                                                      generateEt();
+                                                  } else {
+                                                      if (editTextInflatedView != null) {
+                                                          editTextInflatedView.removeAllViews();
+                                                      }
+                                                  }
+                                              } else {
+                                                  if (editTextInflatedView != null)
+                                                      editTextInflatedView.removeAllViews();
+                                              }
+                                          }
+                                      }
+
+        );
+        answerContainer.addView(rg);
     }
 
 
@@ -149,54 +359,8 @@ public class DynamicFragment extends Fragment {
             answerContainer = (LinearLayout) view.findViewById(R.id.ans_container);
             questionDec = (TextView) view.findViewById(R.id.questionDec);
             insertDate();
-            headerTextView.setText(Html.fromHtml(questionsModel.getQuestionText()));
-
-
-//            headerTextView = (TextView) view.findViewById(R.id.header);
-//            answerContainer = (LinearLayout) view.findViewById(R.id.ans_container);
-//            questionDec = (TextView) view.findViewById(R.id.questionDec);
-//            insertDate();
-//            headerTextView.setText(Html.fromHtml(questionsModel.getQuestionText()));
-//
-//            FragmentControler fragmentControler = (FragmentControler) getActivity();
-//            if (!fragmentControler.getRepeater())
-//                for (AnswerModel.SuveryAnswer suveryAnswer : answerModel.getSuveryAnswers()) {
-//                    if (suveryAnswer != null && questionDec != null && questionsModel.getQuestionId().equals(suveryAnswer.getQuestionId())) {
-//                        this.suveryAnswer = suveryAnswer;
-//                    }
-//                }
-//
-//
-//            if (questionsModel.getQuestionType().equals("radio"))
-//                generateRadioButtonView();
-//            else if (questionsModel.getQuestionType().equals("message"))
-//                setMessageType();
-//            else if (questionsModel.getQuestionType().equals("checkbox"))
-//                checkBoxInput();
-//            else if (questionsModel.getQuestionType().equals("checkbox_radio"))
-//                checkBox_radio();
-//            else if (questionsModel.getQuestionType().equals("number_radio"))
-//                dynamicTextInput();
-//            else if (questionsModel.getQuestionType().equals("number_number_radio"))
-//                dynamicTextInput();
-//            else if (questionsModel.getQuestionType().equals("text_text"))
-//                dynamicTextInput();
-//            else if (questionsModel.getQuestionType().equals("text_text_radio"))
-//                dynamicTextInput();
-//            else if (questionsModel.getQuestionType().equals("text_radio"))
-//                dynamicTextInput();
-//            else if (questionsModel.getQuestionType().equals("select"))
-//                selector();
-//            else if (questionsModel.getQuestionType().equals("hh_profile"))
-//                showAreaView();
-//            else
-//                generateEt();
-//
-//
-//            if (!TextUtils.isEmpty(questionsModel.getQuestionDesc()))
-//                questionDec.setText(Html.fromHtml(questionsModel.getQuestionDesc()));
+            headerTextView.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
         } catch (Exception e) {
-            showDialogMessage("Something went wrong need to contact developer");
         } finally {
             return view;
         }
@@ -220,7 +384,7 @@ public class DynamicFragment extends Fragment {
             sit.setText(areaModel.getSit());
             gps.setText(areaModel.getGps());
             block.setText(areaModel.getBlock());
-            hh.setText(areaModel.getHH());
+            hh.setText("" + areaModel.getSit() + areaModel.getBlock() + areaModel.getGps() + areaModel.getHH());
             indu.setText(areaModel.get_id());
             lat.setText(areaModel.getLat());
             long_.setText(areaModel.get_long());
@@ -234,26 +398,109 @@ public class DynamicFragment extends Fragment {
 
 
     private void populateBoth() {
+        singleSelecter = questionsModel.isHh_single();
+        final RadioButton[] rb = new RadioButton[questionsModel.getAnswers().size()];
+        rg = new RadioGroup(getContext()); //create the RadioGroup
+        rg.setOrientation(RadioGroup.VERTICAL);//or RadioGroup.VERTICAL
+
+
         for (int i = 0; i < questionsModel.getAnswers().size(); i++) {
             if (questionsModel.getAnswers().get(i).getOptionType().equals("number"))
-                selector_select(questionsModel.getAnswers().get(i).getMin(), questionsModel.getAnswers().get(i).getMax());
+                selector_select(questionsModel.getAnswers().get(i).getOptionText(), questionsModel.getAnswers().get(i).getMin(), questionsModel.getAnswers().get(i).getMax(), i);
             else {
+                if (questionsModel.getAnswers().get(i).getOptionType().equals("radio")) {
+                    rb[i] = new RadioButton(getContext());
+                    rg.addView(rb[i]);
+                    rb[i].setText(Html.fromHtml(questionsModel.getAnswers().get(i).getOptionText()));
+                    rb[i].setId(i + 100);
+                    rb[i].setTag(i);
+                    rb[i].setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
 
+                    if (suveryAnswer != null)
+                        if (questionsModel.getAnswers().get(i).getOptionValue().equals(suveryAnswer.getAnswer())) {
+                            ((RadioButton) rg.getChildAt(i)).setChecked(true);
+                        }
+                }
             }
-
         }
+        rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                                          @Override
+                                          public void onCheckedChanged(RadioGroup group, int checkedId) {
+                                              try {
+                                                  RadioButton checkedRadioButton = (RadioButton) rg.findViewById(checkedId);
+                                                  boolean isChecked = checkedRadioButton.isChecked();
+                                                  if (isChecked) {
+                                                      for (View id : editTextIds) {
+                                                          EditText editText = (EditText) id;
+                                                          if (editText != null)
+                                                              editText.setText("");
+                                                      }
+                                                      if (spinners.size() > 0) {
+                                                          Spinner spinner = spinners.get(0);
+                                                          spinner.setSelection(0);
+                                                          if (spinners.size() > 1) {
+                                                              Spinner spinner1 = spinners.get(1);
+                                                              spinner1.setSelection(0);
+                                                          }
+                                                          selectedFromSpiner = false;
+                                                          dropDownmonth = 0;
+                                                          dorpDownYear = 0;
+                                                      }
+                                                      int position = (Integer) checkedRadioButton.getTag();
+                                                      if (questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt() != null)
+                                                          showDialogMessage(questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt().toString());
+                                                      int radioPosition = (Integer) checkedRadioButton.getTag();
+                                                      Object status = questionsModel.getAnswers().get(radioPosition).getOptionStatus();
+                                                      commonInterface.getNextPosition(questionsModel.getAnswers().get(radioPosition).getOptionNext(), questionsModel, questionsModel.getAnswers().get(radioPosition).getOptionValue(), true, status, questionsModel.getAnswers().get(position).isRepeater());
+                                                      if (!TextUtils.isEmpty(questionsModel.getAnswers().get(position).getOptionValue()) && questionsModel.getAnswers().get(position).getOptionValue().equals("66")) {
+                                                          commonInterface.hideNext();
+                                                          if (editTextInflatedView != null) {
+                                                              //    editTextInflatedView.removeAllViews();
+                                                          }
+                                                          generateEt();
+                                                      }
+                                                  } else {
+                                                      //   editTextInflatedView.removeAllViews();
+                                                  }
+                                              } catch (Exception exception) {
+                                                  selectedFromSpiner = false;
+
+                                              }
+                                          }
+                                      }
+
+        );
+        answerContainer.addView(rg);
+
+
     }
 
-    private void selector_select(int min, int max) {
-        ArrayList<String> spinnerArray = new ArrayList<String>();
+    List<Spinner> spinners = new ArrayList<>();
 
-        for (int i = min; i < max; i++) {
-            spinnerArray.add(i + "");
+
+    private void selector_select(final String text, int min, int max, final int index) {
+        final ArrayList<String> spinnerArray = new ArrayList<String>();
+
+        if (text != null) {
+            spinnerArray.add(text);
         }
 
-        Spinner spinner = new Spinner(getContext());
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_dropdown_item, spinnerArray);
+        for (int i = min; i <= max; i++) {
+            spinnerArray.add(i + "");
+        }
+        if (!singleSelecter)
+            if (index == 0) {
+                spinnerArray.add("Pa konnen");
+            }
+
+        final Spinner spinner = new Spinner(getContext());
+        spinner.setId(new Random().nextInt(29 + min));
+        spinners.add(spinner);
+        spinner.setTag(new Random().nextInt(min + max));
+        ArrayAdapter<String> spinnerArrayAdapter = new CustomArrayAdapter(getContext(), android.R.layout.simple_spinner_dropdown_item, spinnerArray);
+
         spinner.setAdapter(spinnerArrayAdapter);
+
         answerContainer.addView(spinner);
 
 //        for (int i = 0; i < questionsModel.getAnswers().size(); i++) {
@@ -263,23 +510,64 @@ public class DynamicFragment extends Fragment {
 //
 //        }
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
-                    BaseActivity baseActivity = (BaseActivity) getActivity();
-                    baseActivity.messageToast("Please select Somthing");
-                    commonInterface.hideNext();
-                } else {
-                    Object status = questionsModel.getAnswers().get(position).getOptionStatus();
-                    commonInterface.getNextPosition(questionsModel.getAnswers().get(position).getOptionNext(), questionsModel, questionsModel.getAnswers().get(position).getOptionValue(), true, status, questionsModel.getAnswers().get(position).isRepeater());
-                }
-            }
+                                              @Override
+                                              public void onItemSelected(AdapterView<?> parent, View view, int positionx, long id) {
+                                                  if (singleSelecter) {
+                                                      switch (index) {
+                                                          case 0:
+                                                              spinners.get(1).setSelection(0);
+                                                              break;
+                                                          case 1:
+                                                              spinners.get(0).setSelection(0);
+                                                              break;
+                                                      }
+                                                  }
+                                                  if (rg != null) {
+                                                      selectedFromSpiner = true;
+                                                      int as = rg.getCheckedRadioButtonId();
+                                                      if (as > 0) {
+                                                          rg.clearCheck();
+                                                      }
+                                                  }
+                                                  if (index == 0 && (positionx == 0 || positionx + 1 == spinnerArray.size())) {
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+                                                      if (positionx == 0) {
+                                                          commonInterface.hideNext();
+                                                      }
+                                                      if (positionx + 1 == spinnerArray.size()) {
+                                                          commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext(), questionsModel, "" + 99, true, "", questionsModel.getAnswers().get(0).isRepeater());
+                                                      }
 
-            }
-        });
+                                                  } else if ((index == 1 && positionx == 0)) {
+                                                      commonInterface.hideNext();
+                                                  } else {
+                                                      String positionStr = spinnerArray.get(positionx);
+                                                      int position = Integer.parseInt(positionStr);
+                                                      if (index == 0) {
+                                                          dropDownmonth = position;
+                                                      } else
+                                                          dorpDownYear = position;
+
+                                                      if ((dorpDownYear == new DateTime().getYear() && dropDownmonth > new DateTime().getMonthOfYear()) && !singleSelecter) {
+                                                          commonInterface.hideNext();
+                                                          if (dropDownmonth == 0 || dorpDownYear == 0)
+                                                              commonInterface.hideNext();
+                                                      } else {
+                                                          commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext(), questionsModel, "" + position, true, "", questionsModel.getAnswers().get(0).isRepeater());
+                                                          if ((dropDownmonth == 0 || dorpDownYear == 0) && !singleSelecter)
+                                                              commonInterface.hideNext();
+
+                                                      }
+                                                  }
+                                              }
+
+                                              @Override
+                                              public void onNothingSelected(AdapterView<?> parent) {
+
+                                              }
+                                          }
+
+        );
 
 
     }
@@ -331,7 +619,7 @@ public class DynamicFragment extends Fragment {
         rg = new RadioGroup(getContext()); //create the RadioGroup
         rg.setOrientation(RadioGroup.VERTICAL);//or RadioGroup.VERTICAL
         for (int i = 0; i < questionsModel.getAnswers().size(); i++) {
-            if (questionsModel.getAnswers().get(i).getOptionType().equals("number")) {
+            if (questionsModel.getAnswers().get(i).getOptionType().equals("number") || questionsModel.getAnswers().get(i).getOptionType().equals("text")) {
                 View id = generateEt(questionsModel.getAnswers().get(i).getMax(), questionsModel.getAnswers().get(i).getMin(), i);
                 editTextIds.add(id);
             }
@@ -342,6 +630,8 @@ public class DynamicFragment extends Fragment {
                 rb[i].setId(i + 100);
                 rb[i].setTag(i);
                 rb[i].setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+
+                //// TODO: 14/06/16 radio button from map and marke if condtion
 
                 if (suveryAnswer != null)
                     if (questionsModel.getAnswers().get(i).getOptionValue().equals(suveryAnswer.getAnswer())) {
@@ -359,6 +649,10 @@ public class DynamicFragment extends Fragment {
                                                           if (editText != null)
                                                               editText.setText("");
                                                       }
+                                                      if (editTextAnswers.containsKey("text"))
+                                                          editTextAnswers.remove("text");
+                                                      editTextAnswers.put("radio", "true");
+
                                                       int position = (Integer) checkedRadioButton.getTag();
                                                       if (questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt() != null)
                                                           showDialogMessage(questionsModel.getAnswers().get((Integer) checkedRadioButton.getTag()).getOptionPrompt().toString());
@@ -461,9 +755,9 @@ public class DynamicFragment extends Fragment {
 
             UPPER_LIMIT = questionsModel.getMax();
             LOWER_LIMIT = questionsModel.getMin();
-
-
         }
+
+
         if (suveryAnswer != null)
             editText.setText(suveryAnswer.getAnswer());
 
@@ -481,8 +775,10 @@ public class DynamicFragment extends Fragment {
                         patternFlag = s.toString().matches(questionsModel.getPattern());
                     }
                     boolean matchCase = true;
-                    if (!TextUtils.isEmpty(questionsModel.getMatch_with()) && matchQuestion(questionsModel.getMatch_with()) != null) {
-                        matchCase = s.toString().equals(matchQuestion(questionsModel.getMatch_with()));
+                    if (!TextUtils.isEmpty(questionsModel.getMatch_with())) {
+                        String s1 = matchQuestion(questionsModel.getMatch_with());
+                        if (s1 != null)
+                            matchCase = s.toString().equals(s1);
                     }
                     if (matchCase) {
                         if (patternFlag) {
@@ -502,12 +798,14 @@ public class DynamicFragment extends Fragment {
 // view.setTag(new Temp(questionsModel.getAnswers().get(0).getOptionNext()  , questionsModel, s.toString(), true));
                             }
                         } else {
+                            commonInterface.hideNext();
                             BaseActivity baseActivity = (BaseActivity) getActivity();
                             baseActivity.messageToast("Pattern not match");
                         }
                     } else {
+                        commonInterface.hideNext();
                         BaseActivity baseActivity = (BaseActivity) getActivity();
-                        baseActivity.messageToast("not match with prev");
+                        baseActivity.messageToast("Ere");
                     }
                 } else
                     commonInterface.hideNext();
@@ -525,6 +823,7 @@ public class DynamicFragment extends Fragment {
 
 
     private View generateEt(final int max, final int min, final int position) {
+
         editTextInflatedView = (LinearLayout) getLayoutInflater(getArguments()).inflate(R.layout.input_text, null);
         editTextInflatedView.setId(new Random(100).nextInt());
         if (suveryAnswer != null) {
@@ -534,11 +833,21 @@ public class DynamicFragment extends Fragment {
 
             }
         }
+        try {
+            if (!TextUtils.isEmpty(questionsModel.getAnswers().get(position).getOptionText())) {
+                TextView textView = (TextView) editTextInflatedView.findViewById(R.id.text_status);
+                textView.setVisibility(View.VISIBLE);
+                textView.setText(questionsModel.getAnswers().get(position).getOptionText());
+                textView.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+            }
+        } catch (Exception e) {
+
+        }
         EditText editText = (EditText) editTextInflatedView.findViewById(R.id.text_et);
         editText.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
 
-        if (editTextAnswers.containsKey(position)) {
-            editText.setText(editTextAnswers.get(position));
+        if (editTextAnswers.containsKey("text")) {
+            editText.setText(editTextAnswers.get("text"));
         }
         editText.setId(new Random(67).nextInt());
         if (questionsModel.getQuestionType().contains("number")) {
@@ -546,8 +855,7 @@ public class DynamicFragment extends Fragment {
             UPPER_LIMIT = max;
             LOWER_LIMIT = min;
         }
-        if (suveryAnswer != null)
-            editText.setText(suveryAnswer.getAnswer());
+
 
         editText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -565,20 +873,69 @@ public class DynamicFragment extends Fragment {
                             radioButton.setChecked(false);
                         }
                     }
-                    if (questionsModel.getQuestionType().contains("number")) {
-                        if (max < Integer.parseInt(s.toString()) || Integer.parseInt(s.toString()) < min) {
+                    boolean loopCounter = true;
+                    if (questionsModel.getQuestionId().equals("hid_272")) {
+                        try {
+                            if (FragmentControler.loopThree == Integer.parseInt(s.toString())) {
+                                loopCounter = true;
+                            } else {
+                                loopCounter = false;
+
+                            }
+                        } catch (Exception e) {
+
+                        }
+                    }
+
+
+                    if (questionsModel.getQuestionId().equals("hid_304")) {
+                        try {
+                            if (FragmentControler.loopFour == Integer.parseInt(s.toString())) {
+                                loopCounter = true;
+                            } else {
+                                loopCounter = false;
+                            }
+                        } catch (Exception e) {
+
+                        }
+                    }
+
+                    boolean matchCase = true;
+                    if (!TextUtils.isEmpty(questionsModel.getMatch_with())) {
+                        String answer = matchQuestion(questionsModel.getMatch_with());
+                        HashMap<String, String> hashMap = new Gson().fromJson(answer, HashMap.class);
+                        String finalAnswer = hashMap.get("text");
+                        matchCase = s.toString().equals(finalAnswer);
+                    }
+                    if (loopCounter) {
+                        if (matchCase) {
+                            if (questionsModel.getQuestionType().contains("number")) {
+                                if (max < Integer.parseInt(s.toString()) || Integer.parseInt(s.toString()) < min) {
+                                    commonInterface.hideNext();
+                                    BaseActivity baseActivity = (BaseActivity) getActivity();
+                                    baseActivity.messageToast("Antre yon nimewo/kantite antre " + min + " a " + max + ".");
+                                } else {
+                                    editTextAnswers.put("text", s.toString());
+                                    if (editTextAnswers.containsKey("radio"))
+                                        editTextAnswers.remove("radio");
+                                    Object status = questionsModel.getAnswers().get(position).getOptionStatus();
+                                    commonInterface.getNextPosition(questionsModel.getAnswers().get(position).getOptionNext(), questionsModel, new Gson().toJson(editTextAnswers, HashMap.class), true, status, questionsModel.getAnswers().get(position).isRepeater());
+                                }
+                            } else {
+                                Object status = questionsModel.getAnswers().get(position).getOptionStatus();
+                                commonInterface.getNextPosition(questionsModel.getAnswers().get(position).getOptionNext(), questionsModel, s.toString(), true, status, questionsModel.getAnswers().get(position).isRepeater());
+//                    view.setTag(new Temp(questionsModel.getAnswers().get(0).getOptionNext()  , questionsModel, s.toString(), true));
+                            }
+                        } else {
                             commonInterface.hideNext();
                             BaseActivity baseActivity = (BaseActivity) getActivity();
-                            baseActivity.messageToast("Antre yon nimewo/kantite antre " + min + " a " + max + ".");
-                        } else {
-                            editTextAnswers.put(position, s.toString());
-                            Object status = questionsModel.getAnswers().get(position).getOptionStatus();
-                            commonInterface.getNextPosition(questionsModel.getAnswers().get(position).getOptionNext(), questionsModel, new Gson().toJson(editTextAnswers, HashMap.class), true, status, questionsModel.getAnswers().get(position).isRepeater());
+                            baseActivity.messageToast("Ere");
                         }
                     } else {
-                        Object status = questionsModel.getAnswers().get(position).getOptionStatus();
-                        commonInterface.getNextPosition(questionsModel.getAnswers().get(position).getOptionNext(), questionsModel, s.toString(), true, status, questionsModel.getAnswers().get(position).isRepeater());
-//                    view.setTag(new Temp(questionsModel.getAnswers().get(0).getOptionNext()  , questionsModel, s.toString(), true));
+                        commonInterface.hideNext();
+                        BaseActivity baseActivity = (BaseActivity) getActivity();
+                        String value = questionsModel.getQuestionId().equals("hid_272") ? FragmentControler.loopThree + "" : FragmentControler.loopFour + "";
+                        baseActivity.messageToast("Patisipan yo te di ke  " + s.toString() + " mouri, men yo te bay enfomasyon yo pou  " + value + " times B2a1 was answered] moun ki mouri: retounen epi korige erè.");
                     }
                 } else
                     commonInterface.hideNext();
@@ -678,9 +1035,39 @@ public class DynamicFragment extends Fragment {
     }
 
 
-    private void setMessageType() {
-        //  commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext()  , questionsModel, "", true);
+    void showBloodPresure() {
+        if (questionsModel.getQuestionId().equals("iid_542")) {
+            String questionText = questionsModel.getQuestionText();
 
+            for (AnswerModel.SuveryAnswer answer : answerModel.getSuveryAnswers()) {
+                if (answer.getAnswer().equals("iid_140") || answer.getAnswer().equals("iid_496")) {
+                    questionText = questionText.replace("[B2]", answer.getAnswer());
+                } else if (answer.getAnswer().equals("iid_144") || answer.getAnswer().equals("iid_500")) {
+                    questionText = questionText.replace("[B3]", answer.getAnswer());
+                } else if (answer.getAnswer().equals("iid_152") || answer.getAnswer().equals("iid_508")) {
+                    questionText = questionText.replace("[B5]", answer.getAnswer());
+                } else if (answer.getAnswer().equals("iid_156") || answer.getAnswer().equals("iid_512")) {
+                    questionText = questionText.replace("[B6]", answer.getAnswer());
+                } else if (answer.getAnswer().equals("iid_164") || answer.getAnswer().equals("iid_520")) {
+                    questionText = questionText.replace("[B8]", answer.getAnswer());
+                } else if (answer.getAnswer().equals("iid_168") || answer.getAnswer().equals("iid_525")) {
+                    questionText = questionText.replace("[B9]", answer.getAnswer());
+                } else if (answer.getAnswer().equals("iid_532") || answer.getAnswer().equals("iid_532")) {
+                    questionText = questionText.replace("[B11]", answer.getAnswer());
+                } else if (answer.getAnswer().equals("iid_563") || answer.getAnswer().equals("iid_536")) {
+                    questionText = questionText.replace("[B12]", answer.getAnswer());
+                } else if (answer.getAnswer().equals("iid_540") || answer.getAnswer().equals("iid_540")) {
+                    questionText = questionText.replace("[B13]", answer.getAnswer());
+                }
+
+            }
+            headerTextView.setText(Html.fromHtml(questionText));
+        }
+    }
+
+    private void setMessageType() {
+
+        //  commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext()  , questionsModel, "", true);
     }
 
 
@@ -863,4 +1250,66 @@ public class DynamicFragment extends Fragment {
         }
         return null;
     }
+
+
+    void showPerson(String type) {
+        FragmentControler.childCount = 0;
+        editTextInflatedView = (LinearLayout) getLayoutInflater(getArguments()).inflate(R.layout.show_person, null);
+        LinearLayout namelayout = (LinearLayout) editTextInflatedView.findViewById(R.id.namelayout);
+        LinearLayout sexLayout = (LinearLayout) editTextInflatedView.findViewById(R.id.sexlayout);
+        LinearLayout ageLayout = (LinearLayout) editTextInflatedView.findViewById(R.id.agelayout);
+        FragmentControler fragmentControler = (FragmentControler) getActivity();
+        List<PersonModel> personModels = fragmentControler.getPersonModels();
+
+
+        switch (type) {
+            case "hh_person":
+
+                break;
+            case "hh_children":
+                namelayout.setVisibility(View.GONE);
+                break;
+        }
+        for (PersonModel personModel : personModels) {
+            if (personModel.getTypo().equals(type)) {
+                if (!type.equals("hh_children")) {
+                    TextView name = new TextView(getContext());
+                    name.setTextColor(Color.BLACK);
+                    name.setId(new Random().nextInt(23));
+                    name.setText(personModel.getName());
+                    namelayout.addView(name);
+                    name.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+                }
+                TextView sex = new TextView(getContext());
+                sex.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+
+                TextView age = new TextView(getContext());
+                age.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+
+                age.setId(new Random().nextInt(43));
+                age.setTextColor(Color.BLACK);
+                if (type.equals("hh_children")) {
+                    try {
+                        if (Integer.parseInt(personModel.getAge()) <= 5) {
+                            FragmentControler.childCount++;
+                        }
+
+                    } catch (Exception e) {
+
+                    }
+                }
+
+                sex.setId(new Random().nextInt(54));
+                sex.setTextColor(Color.BLACK);
+
+                sex.setText(personModel.getSex().equals("1") ? "Gason" : "Fi");
+                age.setText(personModel.getAge());
+                sexLayout.addView(sex);
+                ageLayout.addView(age);
+            }
+        }
+        answerContainer.addView(editTextInflatedView);
+    }
 }
+
+

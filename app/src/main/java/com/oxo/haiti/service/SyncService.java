@@ -45,16 +45,16 @@ public class SyncService extends Service {
     }
 
     void syncData(final String data) {
-        Call<CommonModel> commonModelCall = RestAdapter.getInstance(this).getApiService().syncData(data);
-        commonModelCall.enqueue(new Callback<CommonModel>() {
+        Call commonModelCall = RestAdapter.getInstance(this).getApiService().syncData(data);
+        commonModelCall.enqueue(new Callback() {
             @Override
-            public void onResponse(Call<CommonModel> call, Response<CommonModel> response) {
+            public void onResponse(Call call, Response response) {
                 SnappyNoSQL.getInstance().removeData(data);
                 Log.d("",data);
             }
 
             @Override
-            public void onFailure(Call<CommonModel> call, Throwable t) {
+            public void onFailure(Call call, Throwable t) {
 
             }
         });

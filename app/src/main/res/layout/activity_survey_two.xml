@@ -10,6 +10,7 @@
         android:background="@android:color/black" />
 
     <LinearLayout
+        android:id="@+id/maxproblem"
         android:layout_width="match_parent"
         android:layout_height="150dp"
         android:orientation="horizontal">
@@ -40,7 +41,6 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="10dp"
-                android:text="sit"
                 android:textSize="16dp" />
 
         </LinearLayout>
@@ -77,7 +77,6 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="10dp"
-                android:text="sit"
                 android:textSize="@dimen/text_size" />
 
 
@@ -115,7 +114,6 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="10dp"
-                android:text="sit"
                 android:textSize="@dimen/text_size" />
 
 
@@ -169,6 +167,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
+            android:id="@+id/xmen"
             android:visibility="gone">
 
             <TextView
@@ -232,6 +231,7 @@
             android:visibility="gone"
             android:id="@+id/mainlayout_two"
             android:layout_width="match_parent"
+
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:padding="10dp">
@@ -244,6 +244,7 @@
 
             <TextView
                 android:id="@+id/two"
+                android:text="oxo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="10dp"

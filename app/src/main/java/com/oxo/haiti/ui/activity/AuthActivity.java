@@ -3,6 +3,7 @@ package com.oxo.haiti.ui.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.oxo.haiti.R;
+import com.oxo.haiti.model.Condition;
 import com.oxo.haiti.model.QuestionsModel;
 import com.oxo.haiti.model.UserModel;
 import com.oxo.haiti.service.RestAdapter;
@@ -17,6 +19,7 @@ import com.oxo.haiti.storage.ContentStorage;
 import com.oxo.haiti.storage.SnappyNoSQL;
 import com.oxo.haiti.ui.base.BaseActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -84,10 +87,14 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
                 if (id.equals("1")) {
                     SnappyNoSQL.getInstance().saveSurveyQuestionsOne(response.body());
                     fetchSurveyOne("2");
-                } else {
+                } else if (id.equals("2")) {
                     SnappyNoSQL.getInstance().saveSurveyQuestionsTwo(response.body());
-                    hideBar();
                     changeStatus(true);
+                    fetchSurveyOne("4");
+                } else {
+                    SnappyNoSQL.getInstance().saveSurveyQuestionsFour(response.body());
+                    loadConditions();
+
                 }
             }
 
@@ -97,6 +104,25 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
                 messageToast(getString(R.string.retry));
             }
         });
+    }
+
+
+    void loadConditions() {
+        Call<List<Condition>> listCall = RestAdapter.getInstance(this).getApiService().getConditions("3");
+        listCall.enqueue(new Callback<List<Condition>>() {
+            @Override
+            public void onResponse(Call<List<Condition>> call, Response<List<Condition>> response) {
+                SnappyNoSQL.getInstance().saveConditions(response.body());
+                hideBar();
+                changeStatus(true);
+            }
+
+            @Override
+            public void onFailure(Call<List<Condition>> call, Throwable t) {
+                Log.d("", "");
+            }
+        });
+
     }
 
     private void changeStatus(boolean status) {
