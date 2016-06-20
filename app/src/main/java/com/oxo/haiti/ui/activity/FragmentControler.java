@@ -32,6 +32,8 @@ import com.oxo.haiti.utils.CommonInterface;
 import com.oxo.haiti.utils.Connectivity;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
@@ -43,6 +45,7 @@ import retrofit2.Response;
 public class FragmentControler extends BaseActivity implements View.OnClickListener, CommonInterface {
 
     public static int childCount = 0;
+    public static boolean MainYear = false;
     private ViewPager viewPager;
     private QuestionAdapter questionAdapter;
     private int nextPosition;
@@ -59,6 +62,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     public static int loopOne = 1, loopTwo = 1, loopThree = 1, loopFour = 1;
     List<PersonModel> personModels = new ArrayList<>();
     public static boolean isLoaded = false;
+    public static boolean resumeFlag=false;
 
 
     @Override
@@ -95,7 +99,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         findViewById(R.id.next).setOnClickListener(this);
         findViewById(R.id.stop_survey).setOnClickListener(this);
         setUpToolbar();
-//        viewPager.setCurrentItem(executeQuestionId(100));
+//        viewPager.setCurrentItem(executeQuestionId(280));
     }
 
     public List<QuestionsModel> getQuestionsModelList() {
@@ -129,6 +133,15 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         answerModel = new AnswerModel();
         answerModel.setSurveryPid(ContentStorage.getInstance(this).getUserID());
         answerModel.setSurveryId(surveyID);
+        String s = new String(key);
+        if (key.contains("ONE") || key.contains("TWO") || key.contains("THREE")) {
+            s.replace("ONE", " ");
+            s.replace("TWO", " ");
+            s.replace("FOUR", " ");
+
+        }
+        answerModel.setGenerated_survey(s);
+
 
     }
 
@@ -177,6 +190,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         getNextPosition(suveryAnswer.getNextId(), questionsModelList.get(position), suveryAnswer.getAnswer(), false, null, false);
                     }
                 }
+                Log.d("Position", "=" + position);
                 if (questionsModelList.get(position).getQuestionType().equals("message") || questionsModelList.get(position).getQuestionType().equals("hh_profile") || questionsModelList.get(position).getQuestionType().equals("hh_person") || questionsModelList.get(position).getQuestionType().equals("hh_children")) {
                     getNextPosition(questionsModelList.get(position).getAnswers().get(0).getOptionNext(), questionsModelList.get(position), "READ", false, questionsModelList.get(position).getAnswers().get(0).getOptionStatus(), false);
                 }
@@ -202,31 +216,35 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 warning();
                 break;
             case R.id.next:
-
+                resumeFlag=false;
                 System.out.println("next_position" + nextPosition);
                 if (questionAdapter.getCount() != nextPosition && nextPosition != 0) {
                     findViewById(R.id.next).setVisibility(View.INVISIBLE);
                     findViewById(R.id.prev).setVisibility(View.VISIBLE);
-                    List<AnswerModel.SuveryAnswer> answers = answerModel.getSuveryAnswers();
+                    Stack<AnswerModel.SuveryAnswer> answers = answerModel.getSuveryAnswers();
                     answers.add(suveryAnswer);
-                    if (!prevSteps.contains(nextPosition)) {
-                        prevSteps.push(nextPosition);
-                    }
+//                    if (!prevSteps.contains(nextPosition)) {
+                    prevSteps.push(nextPosition);
+//                    }
                     viewPager.setCurrentItem(nextPosition);
                 } else {
-                    List<AnswerModel.SuveryAnswer> answers = answerModel.getSuveryAnswers();
+                    Stack<AnswerModel.SuveryAnswer> answers = answerModel.getSuveryAnswers();
                     answers.add(suveryAnswer);
-                    if (!prevSteps.contains(nextPosition)) {
-                        prevSteps.push(nextPosition);
-                    }
+//                    if (!prevSteps.contains(nextPosition)) {
+                    prevSteps.push(nextPosition);
+//                    }
                     viewPager.setCurrentItem(nextPosition);
                     backgroundStart();
                 }
                 break;
             case R.id.prev:
-                if (!prevSteps.empty())
+                resumeFlag=true;
+                if (!prevSteps.empty()) {
+                    if (nextPosition == prevSteps.peek()) {
+                        prevSteps.pop();
+                    }
                     viewPager.setCurrentItem(prevSteps.pop());
-                else {
+                } else {
                     viewPager.setCurrentItem(0);
                     findViewById(R.id.prev).setVisibility(View.INVISIBLE);
                 }
@@ -373,6 +391,8 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     private void SyncData() {
         if (status != null)
             answerModel.setStatus(status);
+
+        answerModel.setGenerated_survey(key);
         final String data = new Gson().toJson(answerModel);
         if (answerModel.getSuveryAnswers().size() > 0)
             if (Connectivity.InternetAvailable(this)) {
@@ -441,6 +461,23 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
     @Override
     public void getNextPosition(int position, QuestionsModel questionsModel, String answer, boolean isNew, Object object, boolean localIsRepeater) {
+        Log.d("question Id ==", questionsModel.getQuestionId());
+
+        if (questionsModel.getQuestionId().equals("hid_276")) {
+            if (answer.equals("2")) {
+                if (FragmentControler.childCount == 0) {
+                    nextPosition = 365;
+                    for (QuestionsModel.Answer x : questionsModel.getAnswers())
+                        x.setOptionNext(365);
+                } else if (FragmentControler.childCount == 1) {
+                    nextPosition = 305;
+                    for (QuestionsModel.Answer x : questionsModel.getAnswers())
+                        x.setOptionNext(305);
+                }
+            }
+        }
+
+
         fetchViewData(nextPosition, answer, questionsModel);
 
         if (localIsRepeater) {
@@ -466,6 +503,10 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
         if (object != null)
             status = (String) object;
+
+        if (isNew)
+            runtime(answer, questionsModel);
+
     }
 
 
@@ -481,6 +522,99 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
     }
 
+
+    private void runtime(String ans, QuestionsModel questionsModel) {
+        //hid_148 //
+        if (ans.contains("{")) {
+            HashMap<String, String> hashMap = new Gson().fromJson(ans, HashMap.class);
+            if (hashMap.containsKey("text")) {
+                ans = hashMap.get("text");
+            }
+        }
+
+        if (questionsModel.getQuestionId().equals("hid_180")) {
+            int answer = Integer.parseInt(ans);
+            if (answer >= 12) {
+                Stack<AnswerModel.SuveryAnswer> reverseList = answerModel.getSuveryAnswers();
+                Collections.reverse(reverseList);
+                for (AnswerModel.SuveryAnswer suveryAnswer : reverseList) {
+                    if (suveryAnswer.getQuestionId().equals("hid_176")) {
+                        if (suveryAnswer.getAnswer().equals("1")) {
+                            nextPosition = executeQuestionId(188);
+                        } else {
+                            nextPosition = executeQuestionId(184);
+                        }
+                        break;
+                    }
+                }
+            } else {
+                nextPosition = executeQuestionId(188);
+            }
+        } else if (questionsModel.getQuestionId().equals("hid_284")) {
+            int answer = Integer.parseInt(ans);
+            if (answer == 99) {
+                nextPosition = executeQuestionId(296);
+            } else if (answer >= 12 || answer == 88) {
+                if (MainYear) {
+                    Stack<AnswerModel.SuveryAnswer> reverseList = answerModel.getSuveryAnswers();
+                    Collections.reverse(reverseList);
+                    for (AnswerModel.SuveryAnswer suveryAnswer : reverseList) {
+                        if (suveryAnswer.getQuestionId().equals("hid_280")) {
+                            if (suveryAnswer.getAnswer().equals("1")) {
+                                nextPosition = executeQuestionId(296);
+                            } else {
+                                nextPosition = executeQuestionId(288);
+                            }
+                            break;
+                        }
+                    }
+                } else {
+                    nextPosition = executeQuestionId(296);
+                }
+            } else {
+                nextPosition = executeQuestionId(296);
+            }
+        }
+
+
+
+
+
+
+        /*else if (questionsModel.getQuestionId().equals("hid_248")) {
+            int answer = Integer.parseInt(ans);
+            if (answer >= 18) {
+                for (AnswerModel.SuveryAnswer suveryAnswer : answerModel.getSuveryAnswers()) {
+                    if (suveryAnswer.getQuestionId().equals("hid_176")) {
+                        if (suveryAnswer.getAnswer().equals("1")) {
+                            nextPosition = 188;
+                        } else {
+                            nextPosition = 184;
+                        }
+                        break;
+                    }
+                }
+            } else {
+                nextPosition = 184;
+            }
+        }*/
+
+        else if (questionsModel.getQuestionId().equals("iid_108")) {
+            int answer = Integer.parseInt(ans);
+            if (answer < 18) {
+                nextPosition = 0;
+                status = "Ineligible";
+            }
+
+        } else if (questionsModel.getQuestionId().equals("iid_448")) {
+            int answer = Integer.parseInt(ans);
+            if (answer == 0) {
+                nextPosition = executeQuestionId(476);
+            } else {
+                nextPosition = executeQuestionId(452);
+            }
+        }
+    }
 
     int executeQuestionId(int order) {
         if (order == 0) {

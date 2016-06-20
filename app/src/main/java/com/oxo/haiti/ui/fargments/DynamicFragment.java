@@ -43,10 +43,12 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -93,14 +95,19 @@ public class DynamicFragment extends Fragment {
                     try {
                         answerContainer.removeAllViews();
                         FragmentControler fragmentControler = (FragmentControler) getActivity();
-                        if (null == matchQuestion(questionsModel.getQuestionId()) || !fragmentControler.getIntent().getExtras().getString("SURVEY").equals("ONE")) {
+
+                        if (FragmentControler.resumeFlag) {
                             for (AnswerModel.SuveryAnswer suveryAnswer : answerModel.getSuveryAnswers()) {
                                 if (suveryAnswer != null && questionDec != null && questionsModel.getQuestionId().equals(suveryAnswer.getQuestionId())) {
                                     DynamicFragment.this.suveryAnswer = suveryAnswer;
                                 }
                             }
                         } else {
-//                            fragmentControler.hideNext();
+                            DynamicFragment.this.suveryAnswer = null;
+                            if (questionsModel.getQuestionType().equals("message") || questionsModel.getQuestionType().equals("hh_profile") || questionsModel.getQuestionType().equals("hh_person") || questionsModel.getQuestionType().equals("hh_children")) {
+
+                            } else
+                                fragmentControler.hideNext();
                         }
 
 
@@ -153,36 +160,47 @@ public class DynamicFragment extends Fragment {
                         }
 
                         if (questionsModel.getQuestionId().equals("hid_328")) {
-                            if (FragmentControler.childCount == 2 && !FragmentControler.isLoaded) {
-                                for (QuestionsModel.Answer answer : questionsModel.getAnswers())
-                                    answer.setOptionNext(308);
-                                FragmentControler.isLoaded = true;
+                            if (FragmentControler.childCount == 2) {
+                                if (!FragmentControler.isLoaded) {
+                                    for (QuestionsModel.Answer answer : questionsModel.getAnswers())
+                                        answer.setOptionNext(308);
+                                    FragmentControler.isLoaded = true;
+                                } else {
+                                    for (QuestionsModel.Answer answer : questionsModel.getAnswers())
+                                        answer.setOptionNext(332);
+                                }
                             }
                         }
 
                         List<Condition> conditions = SnappyNoSQL.getInstance().getConditions();
                         for (Condition condition : conditions) {
                             if (questionsModel.getQuestionId().equals(condition.getKey())) {
-                                for (AnswerModel.SuveryAnswer answer : answerModel.getSuveryAnswers()) {
+                                Stack<AnswerModel.SuveryAnswer> reverseList = answerModel.getSuveryAnswers();
+//                                Collections.reverse(reverseList);
+                                for (AnswerModel.SuveryAnswer answer : reverseList) {
                                     for (Condition.ConditionMode conditionMode : condition.getValue().getConditions()) {
                                         if (answer.getQuestionId().equals(conditionMode.getQuestionOrder())) {
                                             if (conditionMode.getCompare().equals("==")) {
                                                 if (Integer.parseInt(answer.getAnswer()) == conditionMode.getValue()) {
                                                     for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
-                                                        answer1.setOptionNext(condition.getValue().getQuestionNext());
+                                                        answer1.setOptionNext(conditionMode.getQuestionNext());
+
                                                     }
+                                                    break;
                                                 }
                                             } else if (conditionMode.getCompare().equals("<")) {
                                                 if (Integer.parseInt(answer.getAnswer()) < conditionMode.getValue()) {
                                                     for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
-                                                        answer1.setOptionNext(condition.getValue().getQuestionNext());
+                                                        answer1.setOptionNext(conditionMode.getQuestionNext());
                                                     }
+                                                    break;
                                                 }
                                             } else if (conditionMode.getCompare().equals(">")) {
                                                 if (Integer.parseInt(answer.getAnswer()) > conditionMode.getValue()) {
                                                     for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
-                                                        answer1.setOptionNext(condition.getValue().getQuestionNext());
+                                                        answer1.setOptionNext(conditionMode.getQuestionNext());
                                                     }
+                                                    break;
                                                 }
                                             }
 
@@ -269,11 +287,13 @@ public class DynamicFragment extends Fragment {
     }
 
 
+    List<Integer> tags = new ArrayList<>();
+
     private void genrateRadioGroups() {
 
         try {
             List<QuestionsModel.Answer> answer = questionsModel.getAnswers();
-            generateRadio(answer.subList(0, 6), 1, "a)Nève / Eksite");
+            generateRadio(answer.subList(0, 6), 1, "a) Nève / Eksite");
             generateRadio(answer.subList(6, 12), 2, "b) Dekouraje / Dezespere");
             generateRadio(answer.subList(12, 18), 3, "c) Ajite");
             generateRadio(answer.subList(18, 24), 4, "d) Dekouraje tèlman ke anyen pa enterese m");
@@ -286,9 +306,12 @@ public class DynamicFragment extends Fragment {
 
     }
 
+    Map<Integer, Integer> integerIntegerMap = new HashMap<>();
 
     private void generateRadio(final List<QuestionsModel.Answer> pickeranswer, int x, String jas) {
-
+        integerIntegerMap.clear();
+        tags.clear();
+        tags.add(x);
         TextView textView = new TextView(getContext());
         textView.setId(new Random().nextInt());
 
@@ -297,6 +320,7 @@ public class DynamicFragment extends Fragment {
         answerContainer.addView(textView);
         final RadioButton[] rb = new RadioButton[pickeranswer.size()];
         final RadioGroup rg = new RadioGroup(getContext());
+        rg.setTag(x);
         rg.setId(x * 13 + 1);
         //create the RadioGroup
         rg.setOrientation(RadioGroup.VERTICAL);//or RadioGroup.VERTICAL
@@ -319,27 +343,39 @@ public class DynamicFragment extends Fragment {
                                           public void onCheckedChanged(RadioGroup group, int checkedId) {
                                               RadioButton checkedRadioButton = (RadioButton) rg.findViewById(checkedId);
                                               boolean isChecked = checkedRadioButton.isChecked();
-                                              if (isChecked) {
-                                                  int position = (Integer) checkedRadioButton.getTag();
-                                                  if (pickeranswer.get((Integer) checkedRadioButton.getTag()).getOptionPrompt() != null)
-                                                      showDialogMessage(pickeranswer.get((Integer) checkedRadioButton.getTag()).getOptionPrompt().toString());
-                                                  int radioPosition = (Integer) checkedRadioButton.getTag();
-                                                  Object status = pickeranswer.get(radioPosition).getOptionStatus();
-                                                  commonInterface.getNextPosition(pickeranswer.get(radioPosition).getOptionNext(), questionsModel, pickeranswer.get(radioPosition).getOptionValue(), true, status, pickeranswer.get(position).isRepeater());
-                                                  if (!TextUtils.isEmpty(pickeranswer.get(position).getOptionValue()) && pickeranswer.get(position).getOptionValue().equals("66")) {
-                                                      commonInterface.hideNext();
-                                                      if (editTextInflatedView != null) {
-                                                          editTextInflatedView.removeAllViews();
+                                              tags.remove((Integer) group.getTag());
+                                              int radioPosition = (Integer) checkedRadioButton.getTag();
+
+                                              boolean allSelected = false;
+                                              integerIntegerMap.put((Integer) group.getTag(), radioPosition);
+                                              if (tags.size() == 0) {
+                                                  allSelected = true;
+                                              }
+
+                                              if (allSelected) {
+                                                  if (isChecked) {
+                                                      int position = (Integer) checkedRadioButton.getTag();
+                                                      if (pickeranswer.get((Integer) checkedRadioButton.getTag()).getOptionPrompt() != null)
+                                                          showDialogMessage(pickeranswer.get((Integer) checkedRadioButton.getTag()).getOptionPrompt().toString());
+                                                      Object status = pickeranswer.get(radioPosition).getOptionStatus();
+                                                      commonInterface.getNextPosition(pickeranswer.get(radioPosition).getOptionNext(), questionsModel, new Gson().toJson(integerIntegerMap), true, status, pickeranswer.get(position).isRepeater());
+                                                      if (!TextUtils.isEmpty(pickeranswer.get(position).getOptionValue()) && pickeranswer.get(position).getOptionValue().equals("66")) {
+                                                          commonInterface.hideNext();
+                                                          if (editTextInflatedView != null) {
+                                                              editTextInflatedView.removeAllViews();
+                                                          }
+                                                          generateEt();
+                                                      } else {
+                                                          if (editTextInflatedView != null) {
+                                                              editTextInflatedView.removeAllViews();
+                                                          }
                                                       }
-                                                      generateEt();
                                                   } else {
-                                                      if (editTextInflatedView != null) {
+                                                      if (editTextInflatedView != null)
                                                           editTextInflatedView.removeAllViews();
-                                                      }
                                                   }
                                               } else {
-                                                  if (editTextInflatedView != null)
-                                                      editTextInflatedView.removeAllViews();
+                                                  //// TODO: 18/06/16  please select all
                                               }
                                           }
                                       }
@@ -495,12 +531,12 @@ public class DynamicFragment extends Fragment {
 
         final Spinner spinner = new Spinner(getContext());
         spinner.setId(new Random().nextInt(29 + min));
+        spinner.setTag(text != null ? text : "");
         spinners.add(spinner);
-        spinner.setTag(new Random().nextInt(min + max));
+
         ArrayAdapter<String> spinnerArrayAdapter = new CustomArrayAdapter(getContext(), android.R.layout.simple_spinner_dropdown_item, spinnerArray);
 
         spinner.setAdapter(spinnerArrayAdapter);
-
         answerContainer.addView(spinner);
 
 //        for (int i = 0; i < questionsModel.getAnswers().size(); i++) {
@@ -512,6 +548,13 @@ public class DynamicFragment extends Fragment {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                               @Override
                                               public void onItemSelected(AdapterView<?> parent, View view, int positionx, long id) {
+                                                  String s = (String) spinner.getTag();
+                                                  if (s.equals("Lane")) {
+                                                      FragmentControler.MainYear = true;
+                                                  } else {
+                                                      FragmentControler.MainYear = false;
+
+                                                  }
                                                   if (singleSelecter) {
                                                       switch (index) {
                                                           case 0:
@@ -1038,25 +1081,24 @@ public class DynamicFragment extends Fragment {
     void showBloodPresure() {
         if (questionsModel.getQuestionId().equals("iid_542")) {
             String questionText = questionsModel.getQuestionText();
-
             for (AnswerModel.SuveryAnswer answer : answerModel.getSuveryAnswers()) {
-                if (answer.getAnswer().equals("iid_140") || answer.getAnswer().equals("iid_496")) {
+                if (answer.getQuestionId().equals("iid_140") || answer.getQuestionId().equals("iid_496")) {
                     questionText = questionText.replace("[B2]", answer.getAnswer());
-                } else if (answer.getAnswer().equals("iid_144") || answer.getAnswer().equals("iid_500")) {
+                } else if (answer.getQuestionId().equals("iid_144") || answer.getQuestionId().equals("iid_500")) {
                     questionText = questionText.replace("[B3]", answer.getAnswer());
-                } else if (answer.getAnswer().equals("iid_152") || answer.getAnswer().equals("iid_508")) {
+                } else if (answer.getQuestionId().equals("iid_152") || answer.getQuestionId().equals("iid_508")) {
                     questionText = questionText.replace("[B5]", answer.getAnswer());
-                } else if (answer.getAnswer().equals("iid_156") || answer.getAnswer().equals("iid_512")) {
+                } else if (answer.getQuestionId().equals("iid_156") || answer.getQuestionId().equals("iid_512")) {
                     questionText = questionText.replace("[B6]", answer.getAnswer());
-                } else if (answer.getAnswer().equals("iid_164") || answer.getAnswer().equals("iid_520")) {
+                } else if (answer.getQuestionId().equals("iid_164") || answer.getQuestionId().equals("iid_520")) {
                     questionText = questionText.replace("[B8]", answer.getAnswer());
-                } else if (answer.getAnswer().equals("iid_168") || answer.getAnswer().equals("iid_525")) {
+                } else if (answer.getQuestionId().equals("iid_168") || answer.getQuestionId().equals("iid_525")) {
                     questionText = questionText.replace("[B9]", answer.getAnswer());
-                } else if (answer.getAnswer().equals("iid_532") || answer.getAnswer().equals("iid_532")) {
+                } else if (answer.getQuestionId().equals("iid_532")) {
                     questionText = questionText.replace("[B11]", answer.getAnswer());
-                } else if (answer.getAnswer().equals("iid_563") || answer.getAnswer().equals("iid_536")) {
+                } else if (answer.getQuestionId().equals("iid_536")) {
                     questionText = questionText.replace("[B12]", answer.getAnswer());
-                } else if (answer.getAnswer().equals("iid_540") || answer.getAnswer().equals("iid_540")) {
+                } else if (answer.getQuestionId().equals("iid_540")) {
                     questionText = questionText.replace("[B13]", answer.getAnswer());
                 }
 

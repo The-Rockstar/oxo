@@ -46,10 +46,14 @@ public abstract class BaseActivity extends AppCompatActivity implements DialogIn
     ProgressDialog progressDialog = null;
 
     protected void showProgress() {
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage(getString(R.string.pleasewait));
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        try {
+            progressDialog = new ProgressDialog(this);
+            progressDialog.setMessage(getString(R.string.pleasewait));
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 

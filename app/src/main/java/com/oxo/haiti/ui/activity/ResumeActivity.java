@@ -13,6 +13,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.oxo.haiti.R;
+import com.oxo.haiti.model.AnswerModel;
 import com.oxo.haiti.model.AreaModel;
 import com.oxo.haiti.model.RtfModel;
 import com.oxo.haiti.storage.SnappyNoSQL;
@@ -21,6 +22,7 @@ import java.util.AbstractQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class ResumeActivity extends AppCompatActivity {
 
@@ -37,20 +39,28 @@ public class ResumeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        areaModels.clear();
-        List<String> keys = SnappyNoSQL.getInstance().getKeysArea();
-        for (String key : keys) {
-            AreaModel areaModel = SnappyNoSQL.getInstance().getArea(key);
-            if (areaModel.getMemberRtfModels().size() > 0) {
-                areaModels.add(areaModel);
-            } else {
-                SnappyNoSQL.getInstance().removeArea(key);
+        try {
+            areaModels.clear();
+            List<String> keys = SnappyNoSQL.getInstance().getKeysArea();
+            for (String key : keys) {
+                AreaModel areaModel = SnappyNoSQL.getInstance().getArea(key);
+                if (areaModel.getMemberRtfModels().size() > 0) {
+                    areaModels.add(areaModel);
+                } else {
+                    SnappyNoSQL.getInstance().removeArea(key);
+                }
             }
-        }
-        ListView listView = (ListView) findViewById(R.id.datalist);
+            ListView listView = (ListView) findViewById(R.id.datalist);
 
-        problemSolver();
-        listView.setAdapter(new LocalAdapter(areaModels, sOneKeys));
+            problemSolver();
+            LocalAdapter localAdapter = new LocalAdapter(areaModels, sOneKeys);
+            listView.setAdapter(localAdapter);
+            if (localAdapter.getCount() <= 0) {
+                listView.setVisibility(View.GONE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -111,7 +121,7 @@ public class ResumeActivity extends AppCompatActivity {
                 sit.setText(areaModel.get(position).getSit());
                 gps.setText(areaModel.get(position).getGps());
                 block.setText(areaModel.get(position).getBlock());
-                hh.setText(areaModel.get(position).getHH());
+                hh.setText("" + areaModel.get(position).getSit() + areaModel.get(position).getBlock() + areaModel.get(position).getGps() + areaModel.get(position).getHH());
                 indu.setText(areaModel.get(position).get_id());
                 int count = 0;
 
@@ -162,26 +172,38 @@ public class ResumeActivity extends AppCompatActivity {
                     }
                 });
             } else {
-                linearLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.activity_survey_two, null);
-                LinearLayout linearLayout2 = (LinearLayout) linearLayout.findViewById(R.id.maxproblem);
-                linearLayout2.setVisibility(View.GONE);
 
+
+                AnswerModel answerModel = SnappyNoSQL.getInstance().getSaveState(surveyOne.get(position - areaModel.size()));
+                AreaModel areaModel = executer(answerModel);
+
+                linearLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.activity_survey_two, null);
                 TextView sit = (TextView) linearLayout.findViewById(R.id.sit);
                 TextView gps = (TextView) linearLayout.findViewById(R.id.gps);
                 TextView block = (TextView) linearLayout.findViewById(R.id.block);
                 TextView hh = (TextView) linearLayout.findViewById(R.id.hh);
                 TextView indu = (TextView) linearLayout.findViewById(R.id.ind);
-                sit.setVisibility(View.GONE);
-                gps.setVisibility(View.GONE);
-                block.setVisibility(View.GONE);
-                hh.setVisibility(View.GONE);
-                indu.setVisibility(View.GONE);
-                final LinearLayout linearLayout1 = (LinearLayout) linearLayout.findViewById(R.id.mainlayout_one);
+                indu.setVisibility(View.VISIBLE);
+                final LinearLayout linearLayout1 = (LinearLayout) linearLayout.findViewById(R.id.xmen);
                 linearLayout1.setVisibility(View.VISIBLE);
+                final LinearLayout linearLayou = (LinearLayout) linearLayout.findViewById(R.id.mainlayout_one);
+                linearLayou.setVisibility(View.GONE);
+                final LinearLayout linearLayout2 = (LinearLayout) linearLayout.findViewById(R.id.mainlayout_two);
+                linearLayout2.setVisibility(View.GONE);
+
                 final TextView one = (TextView) linearLayout.findViewById(R.id.one);
-                one.setText(surveyOne.get(position - areaModel.size()));
-                one.setTag(surveyOne.get(position - areaModel.size()));
-                one.setOnClickListener(new View.OnClickListener() {
+                final TextView two = (TextView) linearLayout.findViewById(R.id.two);
+
+
+                sit.setText(areaModel.getSit());
+                gps.setText(areaModel.getGps());
+                block.setText(areaModel.getBlock());
+                hh.setText("" + areaModel.getSit() + areaModel.getBlock() + areaModel.getGps() + areaModel.getHH());
+                indu.setText(answerModel.getSurveryId());
+                int count = 0;
+
+                hh.setTag(areaModel.get_id());
+                hh.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         String id = (String) v.getTag();
@@ -201,4 +223,34 @@ public class ResumeActivity extends AppCompatActivity {
             return linearLayout;
         }
     }
+
+
+    private AreaModel executer(AnswerModel answerModel) {
+        AreaModel areaModel = new AreaModel();
+        for (AnswerModel.SuveryAnswer answer : answerModel.getSuveryAnswers()) {
+
+            if (answer.getQuestionId().equals("hid_140") && !TextUtils.isEmpty(answer.getAnswer())) {
+
+            } else if (answer.getQuestionId().equals("hid_2") || answer.getQuestionId().equals("hid_3") || answer.getQuestionId().equals("hid_4") || answer.getQuestionId().equals("hid_5") && !TextUtils.isEmpty(answer.getAnswer())) {
+                areaModel.setBlock(answer.getAnswer());
+            } else if (answer.getQuestionId().equals("hid_1") && !TextUtils.isEmpty(answer.getAnswer())) {
+                areaModel.setSit(answer.getAnswer());
+            } else if (answer.getQuestionId().equals("hid_7") && !TextUtils.isEmpty(answer.getAnswer())) {
+                areaModel.setHH(answer.getAnswer());
+            } else if (answer.getQuestionId().equals("hid_6") && !TextUtils.isEmpty(answer.getAnswer())) {
+                areaModel.setGps(answer.getAnswer());
+            } else if (answer.getQuestionId().equals("hid_8") && !TextUtils.isEmpty(answer.getAnswer())) {
+                areaModel.setLat(answer.getAnswer());
+            } else if (answer.getQuestionId().equals("hid_10") && !TextUtils.isEmpty(answer.getAnswer())) {
+                areaModel.set_long(answer.getAnswer());
+            } else if (answer.getQuestionId().equals("hid_14") && !TextUtils.isEmpty(answer.getAnswer())) {
+                areaModel.setName(answer.getAnswer());
+            } else if (answer.getQuestionId().equals("hid_15") && !TextUtils.isEmpty(answer.getAnswer())) {
+                areaModel.setDesc(answer.getAnswer());
+            }
+        }
+        return areaModel;
+    }
+
+
 }

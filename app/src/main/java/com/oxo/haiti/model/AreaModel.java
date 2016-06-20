@@ -14,35 +14,35 @@ public class AreaModel implements Serializable {
 
     @SerializedName("sit")
     @Expose
-    private String sit;
+    private String sit="";
 
     @SerializedName("HH")
     @Expose
-    private String HH;
+    private String HH="";
 
     @SerializedName("block")
     @Expose
-    private String block;
+    private String block="";
 
     @SerializedName("gps")
     @Expose
-    private String gps;
+    private String gps="";
 
     @SerializedName("_id")
     @Expose
-    private String _id;
+    private String _id="";
 
     @SerializedName("lat")
     @Expose
-    private String lat;
+    private String lat="";
 
     @SerializedName("_long")
     @Expose
-    private String _long;
+    private String _long="";
 
     @SerializedName("name")
     @Expose
-    private String name;
+    private String name="";
 
     public String getLat() {
         return lat;

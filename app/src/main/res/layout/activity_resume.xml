@@ -15,4 +15,10 @@
         android:layout_height="match_parent">
 
     </ListView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:id="@+id/max_mus"
+        android:text="Please Add Person."
+        android:layout_height="match_parent" />
 </RelativeLayout>

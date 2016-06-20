@@ -6,24 +6,38 @@ import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Created by jaswinderwadali on 19/05/16.
  */
 public class AnswerModel implements Serializable {
 
-    @SerializedName("survery_id")
+    @SerializedName("survey_id")
     @Expose
     private String surveryId;
-    @SerializedName("survery_pid")
+    @SerializedName("survey_pid")
     @Expose
     private String surveryPid;
-    @SerializedName("suvery_answers")
+    @SerializedName("survey_answers")
     @Expose
-    private List<SuveryAnswer> suveryAnswers = new ArrayList<>();
+    private Stack<SuveryAnswer> suveryAnswers = new Stack<>();
     @SerializedName("stop_status")
     @Expose
     private String status;
+
+    @SerializedName("generated_survey_id")
+    @Expose
+    private String generated_survey;
+
+
+    public String getGenerated_survey() {
+        return generated_survey;
+    }
+
+    public void setGenerated_survey(String generated_survey) {
+        this.generated_survey = generated_survey;
+    }
 
     /**
      * @return The answer
@@ -71,14 +85,14 @@ public class AnswerModel implements Serializable {
     /**
      * @return The suveryAnswers
      */
-    public List<SuveryAnswer> getSuveryAnswers() {
+    public Stack<SuveryAnswer> getSuveryAnswers() {
         return suveryAnswers;
     }
 
     /**
      * @param suveryAnswers The suvery_answers
      */
-    public void setSuveryAnswers(List<SuveryAnswer> suveryAnswers) {
+    public void setSuveryAnswers(Stack<SuveryAnswer> suveryAnswers) {
         this.suveryAnswers = suveryAnswers;
     }
 
@@ -98,6 +112,11 @@ public class AnswerModel implements Serializable {
         @SerializedName("next_id")
         @Expose
         private int next_id = 0;
+
+
+
+
+
 
         /**
          * @return The nextid

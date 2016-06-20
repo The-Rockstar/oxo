@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:padding="15dp"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
@@ -163,11 +164,11 @@
 
 
         <LinearLayout
+            android:id="@+id/xmen"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:id="@+id/xmen"
             android:visibility="gone">
 
             <TextView
@@ -189,33 +190,32 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="10dp"
+                android:visibility="gone"
                 android:textSize="@dimen/text_size" />
 
 
         </LinearLayout>
-    </LinearLayout>
 
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="vertical">
 
         <LinearLayout
-            android:visibility="gone"
             android:id="@+id/mainlayout_one"
-            android:layout_width="match_parent"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="10dp">
+
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:visibility="visible">
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="100dp"
                 android:padding="10dp"
-                android:text="individual : " />
+                android:text="Individual A" />
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/black" />
 
             <TextView
                 android:id="@+id/one"
@@ -227,36 +227,42 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:visibility="gone"
-            android:id="@+id/mainlayout_two"
-            android:layout_width="match_parent"
-
+        <View
+            android:layout_width="1dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="10dp">
+            android:background="@android:color/black" />
+
+        <LinearLayout
+            android:id="@+id/mainlayout_two"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:visibility="visible">
+
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="100dp"
                 android:padding="10dp"
-                android:text="individual : " />
+                android:text="Individual B" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/black" />
+
 
             <TextView
                 android:id="@+id/two"
-                android:text="oxo"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="10dp"
+                android:text="oxo"
                 android:textSize="@dimen/text_size" />
         </LinearLayout>
 
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/black" />
-    </LinearLayout>
 
+    </LinearLayout>
 
 </LinearLayout>

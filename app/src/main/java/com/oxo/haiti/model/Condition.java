@@ -60,9 +60,6 @@ public class Condition  implements Serializable{
         @SerializedName("relation")
         @Expose
         private String relation;
-        @SerializedName("question_next")
-        @Expose
-        private Integer questionNext;
         @SerializedName("conditions")
         @Expose
         private List<ConditionMode> conditions = new ArrayList<>();
@@ -85,23 +82,6 @@ public class Condition  implements Serializable{
             this.relation = relation;
         }
 
-        /**
-         *
-         * @return
-         * The questionNext
-         */
-        public Integer getQuestionNext() {
-            return questionNext;
-        }
-
-        /**
-         *
-         * @param questionNext
-         * The question_next
-         */
-        public void setQuestionNext(Integer questionNext) {
-            this.questionNext = questionNext;
-        }
 
         /**
          *
@@ -128,12 +108,18 @@ public class Condition  implements Serializable{
         @SerializedName("question_order")
         @Expose
         private String questionOrder;
+
         @SerializedName("value")
         @Expose
         private Integer value;
+
         @SerializedName("compare")
         @Expose
         private String compare;
+
+        @SerializedName("question_next")
+        @Expose
+        private Integer questionNext;;
 
         /**
          *
@@ -188,6 +174,26 @@ public class Condition  implements Serializable{
         public void setCompare(String compare) {
             this.compare = compare;
         }
+
+
+        /**
+         *
+         * @return
+         * The questionNext
+         */
+        public Integer getQuestionNext() {
+            return questionNext;
+        }
+
+        /**
+         *
+         * @param questionNext
+         * The question_next
+         */
+        public void setQuestionNext(Integer questionNext) {
+            this.questionNext = questionNext;
+        }
+
 
     }
 

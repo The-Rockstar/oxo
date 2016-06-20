@@ -23,6 +23,7 @@ public class SurveyTwo extends AppCompatActivity implements View.OnClickListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_survey_two);
+
         TextView one = (TextView) findViewById(R.id.one);
         TextView two = (TextView) findViewById(R.id.two);
         areaModel = SnappyNoSQL.getInstance().getArea(getIntent().getStringExtra("key"));
