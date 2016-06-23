@@ -14,35 +14,35 @@ public class AreaModel implements Serializable {
 
     @SerializedName("sit")
     @Expose
-    private String sit="";
+    private String sit = "";
 
     @SerializedName("HH")
     @Expose
-    private String HH="";
+    private String HH = "";
 
     @SerializedName("block")
     @Expose
-    private String block="";
+    private String block = "";
 
     @SerializedName("gps")
     @Expose
-    private String gps="";
+    private String gps = "";
 
     @SerializedName("_id")
     @Expose
-    private String _id="";
+    private String _id = "";
 
     @SerializedName("lat")
     @Expose
-    private String lat="";
+    private String lat = "";
 
     @SerializedName("_long")
     @Expose
-    private String _long="";
+    private String _long = "";
 
     @SerializedName("name")
     @Expose
-    private String name="";
+    private String name = "";
 
     public String getLat() {
         return lat;
@@ -81,8 +81,6 @@ public class AreaModel implements Serializable {
     private String desc;
 
 
-
-
     @SerializedName("members")
     @Expose
     private List<RtfModel> memberRtfModels = new ArrayList<>();
@@ -90,8 +88,9 @@ public class AreaModel implements Serializable {
     public void setMemberRtfModels(RtfModel memberRtfModels) {
         this.memberRtfModels.add(memberRtfModels);
     }
+
     public void setMemberRtfModels(List<RtfModel> memberRtfModels) {
-        this.memberRtfModels.addAll(memberRtfModels);
+        this.memberRtfModels = memberRtfModels;
     }
 
     public List<RtfModel> getMemberRtfModels() {

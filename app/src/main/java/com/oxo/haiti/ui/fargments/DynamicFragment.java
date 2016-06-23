@@ -104,6 +104,7 @@ public class DynamicFragment extends Fragment {
                             }
                         } else {
                             DynamicFragment.this.suveryAnswer = null;
+                            editTextAnswers.clear();
                             if (questionsModel.getQuestionType().equals("message") || questionsModel.getQuestionType().equals("hh_profile") || questionsModel.getQuestionType().equals("hh_person") || questionsModel.getQuestionType().equals("hh_children")) {
 
                             } else
@@ -160,7 +161,7 @@ public class DynamicFragment extends Fragment {
                         }
 
                         if (questionsModel.getQuestionId().equals("hid_328")) {
-                            if (FragmentControler.childCount == 2) {
+                            if (FragmentControler.childCount >= 2) {
                                 if (!FragmentControler.isLoaded) {
                                     for (QuestionsModel.Answer answer : questionsModel.getAnswers())
                                         answer.setOptionNext(308);
@@ -220,11 +221,11 @@ public class DynamicFragment extends Fragment {
                                 List<RtfModel> rtfModels = areaModel.getMemberRtfModels();
                                 String s = "";
                                 if (rtfModels.size() > 0) {
-                                    s = rtfModels.get(0).getName();
+                                    s = addAgeSex(rtfModels.get(0).getName());
 
                                     if (rtfModels.size() > 1 && !rtfModels.get(1).getName().equals(rtfModels.get(0).getName())) {
                                         s = s.concat(" epi ");
-                                        s = s.concat(rtfModels.get(1).getName());
+                                        s = s.concat(addAgeSex(rtfModels.get(1).getName()));
                                     }
                                 }
 
@@ -284,6 +285,19 @@ public class DynamicFragment extends Fragment {
             }, 500);
         } else {
         }
+    }
+
+    private String addAgeSex(String name) {
+
+        FragmentControler fragmentControler = (FragmentControler) getActivity();
+        List<PersonModel> personModels = fragmentControler.getPersonModels();
+        for (PersonModel personModel : personModels) {
+            if (personModel.getName().equals(name)) {
+                return personModel.getName() + " " + personModel.getId() + " " + personModel.getAge() + " " + personModel.getSex();
+            }
+        }
+
+        return name;
     }
 
 
@@ -515,6 +529,7 @@ public class DynamicFragment extends Fragment {
 
 
     private void selector_select(final String text, int min, int max, final int index) {
+        FragmentControler.MainYear = false;
         final ArrayList<String> spinnerArray = new ArrayList<String>();
 
         if (text != null) {
@@ -584,6 +599,9 @@ public class DynamicFragment extends Fragment {
                                                   } else if ((index == 1 && positionx == 0)) {
                                                       commonInterface.hideNext();
                                                   } else {
+//                                                      if (text != null) {
+//                                                          positionx = positionx + 1;
+//                                                      }
                                                       String positionStr = spinnerArray.get(positionx);
                                                       int position = Integer.parseInt(positionStr);
                                                       if (index == 0) {
@@ -639,7 +657,7 @@ public class DynamicFragment extends Fragment {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
                     BaseActivity baseActivity = (BaseActivity) getActivity();
-                    baseActivity.messageToast("Please select Somthing");
+//                    baseActivity.messageToast("Pattern not match with 'Erè'");
                     commonInterface.hideNext();
                 } else {
                     Object status = questionsModel.getAnswers().get(position).getOptionStatus();
@@ -843,12 +861,12 @@ public class DynamicFragment extends Fragment {
                         } else {
                             commonInterface.hideNext();
                             BaseActivity baseActivity = (BaseActivity) getActivity();
-                            baseActivity.messageToast("Pattern not match");
+                            baseActivity.messageToast("Erè");
                         }
                     } else {
                         commonInterface.hideNext();
                         BaseActivity baseActivity = (BaseActivity) getActivity();
-                        baseActivity.messageToast("Ere");
+                        baseActivity.messageToast("Erè");
                     }
                 } else
                     commonInterface.hideNext();
@@ -1095,16 +1113,33 @@ public class DynamicFragment extends Fragment {
                 } else if (answer.getQuestionId().equals("iid_168") || answer.getQuestionId().equals("iid_525")) {
                     questionText = questionText.replace("[B9]", answer.getAnswer());
                 } else if (answer.getQuestionId().equals("iid_532")) {
-                    questionText = questionText.replace("[B11]", answer.getAnswer());
+                    String value = fetchMapValue(answer.getAnswer());
+                    questionText = questionText.replace("[B11]", value);
                 } else if (answer.getQuestionId().equals("iid_536")) {
-                    questionText = questionText.replace("[B12]", answer.getAnswer());
+                    String value = fetchMapValue(answer.getAnswer());
+                    questionText = questionText.replace("[B12]", value);
                 } else if (answer.getQuestionId().equals("iid_540")) {
-                    questionText = questionText.replace("[B13]", answer.getAnswer());
+                    String value = fetchMapValue(answer.getAnswer());
+                    questionText = questionText.replace("[B13]", value);
                 }
 
             }
             headerTextView.setText(Html.fromHtml(questionText));
         }
+    }
+
+    private String fetchMapValue(String answer) {
+        String value = "";
+        if (answer.contains("{")) {
+            Map<String, String> map = new Gson().fromJson(answer, HashMap.class);
+            if (map.containsKey("text")) {
+                value = map.get("text");
+            } else if (map.containsKey("radio"))
+                value = map.get("text");
+
+
+        }
+        return value;
     }
 
     private void setMessageType() {
@@ -1285,12 +1320,15 @@ public class DynamicFragment extends Fragment {
 
 
     String matchQuestion(String question_id) {
-        for (AnswerModel.SuveryAnswer answer : answerModel.getSuveryAnswers()) {
+        List<AnswerModel.SuveryAnswer> suveryAnswers = answerModel.getSuveryAnswers();
+//        Collections.reverse(suveryAnswers);
+        String answerStr = null;
+        for (AnswerModel.SuveryAnswer answer : suveryAnswers) {
             if (answer.getQuestionId().equals(question_id) && !TextUtils.isEmpty(answer.getAnswer())) {
-                return answer.getAnswer();
+                answerStr = answer.getAnswer();
             }
         }
-        return null;
+        return answerStr;
     }
 
 

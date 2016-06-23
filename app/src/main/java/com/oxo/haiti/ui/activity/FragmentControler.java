@@ -62,7 +62,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     public static int loopOne = 1, loopTwo = 1, loopThree = 1, loopFour = 1;
     List<PersonModel> personModels = new ArrayList<>();
     public static boolean isLoaded = false;
-    public static boolean resumeFlag=false;
+    public static boolean resumeFlag = false;
 
 
     @Override
@@ -99,7 +99,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         findViewById(R.id.next).setOnClickListener(this);
         findViewById(R.id.stop_survey).setOnClickListener(this);
         setUpToolbar();
-//        viewPager.setCurrentItem(executeQuestionId(280));
+//        viewPager.setCurrentItem(executeQuestionId(252));
     }
 
     public List<QuestionsModel> getQuestionsModelList() {
@@ -216,7 +216,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 warning();
                 break;
             case R.id.next:
-                resumeFlag=false;
+                resumeFlag = false;
                 System.out.println("next_position" + nextPosition);
                 if (questionAdapter.getCount() != nextPosition && nextPosition != 0) {
                     findViewById(R.id.next).setVisibility(View.INVISIBLE);
@@ -238,7 +238,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 }
                 break;
             case R.id.prev:
-                resumeFlag=true;
+                resumeFlag = true;
                 if (!prevSteps.empty()) {
                     if (nextPosition == prevSteps.peek()) {
                         prevSteps.pop();
@@ -277,7 +277,6 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         loopTwo = 0;
         loopThree = 0;
         loopFour = 0;
-        List<String> stringList = new ArrayList<>();
         PersonModel personModel = null;
         for (AnswerModel.SuveryAnswer answer : answerModel.getSuveryAnswers()) {
 
@@ -285,7 +284,6 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 personModel = new PersonModel();
                 personModel.setName(answer.getAnswer());
                 personModel.setTypo("hh_person");
-                personModels.add(personModel);
 
             }
             if (answer.getQuestionId().equals("hid_144") && !TextUtils.isEmpty(answer.getAnswer())) {
@@ -293,8 +291,10 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     personModel.setSex(answer.getAnswer());
             }
             if (answer.getQuestionId().equals("hid_148") && !TextUtils.isEmpty(answer.getAnswer())) {
-                if (personModel != null)
+                if (personModel != null) {
                     personModel.setAge(answer.getAnswer());
+                    personModels.add(personModel);
+                }
             }
 
 
@@ -302,16 +302,17 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 personModel = new PersonModel();
                 personModel.setSex(answer.getAnswer());
                 personModel.setTypo("hh_children");
-                personModels.add(personModel);
             }
             if (answer.getQuestionId().equals("hid_180") && !TextUtils.isEmpty(answer.getAnswer())) {
-                if (personModel != null)
+                if (personModel != null) {
                     personModel.setAge(answer.getAnswer());
+                    personModels.add(personModel);
+
+                }
             }
 
             if (answer.getQuestionId().equals("hid_140") && !TextUtils.isEmpty(answer.getAnswer())) {
                 loopOne++;
-                stringList.add(answer.getAnswer());
                 RtfModel usersModel = new RtfModel();
                 usersModel.setName(answer.getAnswer());
                 usersModel.setSurveyId(key);
@@ -347,20 +348,20 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     void backgroundStart() {
         new AsyncTask() {
             @Override
-            protected Object doInBackground(Object[] params) {
+            protected Object doInBackground (Object[]params){
                 SyncData();
-                clearSaveState(key);
+                clearSaveState(key, getIntent().getExtras().getString("SURVEY").equals("ONE"));
                 return null;
             }
 
             @Override
-            protected void onPreExecute() {
+            protected void onPreExecute () {
                 super.onPreExecute();
                 showProgress();
             }
 
             @Override
-            protected void onPostExecute(Object o) {
+            protected void onPostExecute (Object o){
                 super.onPostExecute(o);
                 hideBar();
                 runOnUiThread(new Runnable() {
@@ -369,7 +370,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         if (getIntent().getExtras().getString("SURVEY").equals("ONE") || getIntent().getExtras().getString("SURVEY").equals("FOUR")) {
                             executeAnswers();
                             SnappyNoSQL.getInstance().saveArea(areaModel, key);
-                            clearSaveState(key);
+                            clearSaveState(key, getIntent().getExtras().getString("SURVEY").equals("ONE"));
 //                            Intent intent = new Intent(FragmentControler.this, SurveyTwo.class);
                             //                          intent.putExtras(getIntent());
                             //                        startActivity(intent);
@@ -436,7 +437,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 //                        warning();
 //                        break;
                     case R.id.three:
-                        clearSaveState(key);
+                        clearSaveState(key, getIntent().getExtras().getString("SURVEY").equals("ONE"));
                         ContentStorage.getInstance(FragmentControler.this).loggedIn(false);
                         Intent intent = new Intent(FragmentControler.this, AuthActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -452,18 +453,25 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         popup.show();
     }
 
-    private void stopSurvey() {
-        clearSaveState(key);
-        SyncData();
-        finish();
-    }
-
 
     @Override
     public void getNextPosition(int position, QuestionsModel questionsModel, String answer, boolean isNew, Object object, boolean localIsRepeater) {
         Log.d("question Id ==", questionsModel.getQuestionId());
 
         if (questionsModel.getQuestionId().equals("hid_276")) {
+            if (answer.equals("2")) {
+                if (FragmentControler.childCount == 0) {
+                    nextPosition = 365;
+                    for (QuestionsModel.Answer x : questionsModel.getAnswers())
+                        x.setOptionNext(365);
+                } else if (FragmentControler.childCount == 1) {
+                    nextPosition = 305;
+                    for (QuestionsModel.Answer x : questionsModel.getAnswers())
+                        x.setOptionNext(305);
+                }
+            }
+        }
+        if (questionsModel.getQuestionId().equals("hid_304")) {
             if (answer.equals("2")) {
                 if (FragmentControler.childCount == 0) {
                     nextPosition = 365;
@@ -574,6 +582,77 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             } else {
                 nextPosition = executeQuestionId(296);
             }
+        } else if (questionsModel.getQuestionId().equals("iid_468")) {
+
+            try {
+                int answer = Integer.parseInt(ans);
+                if (MainYear) {
+                    if (answer > 5) {
+                        nextPosition = executeQuestionId(476);
+                    }
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if (questionsModel.getQuestionId().equals("iid_424")) {
+            Stack<AnswerModel.SuveryAnswer> reverseList = answerModel.getSuveryAnswers();
+//                    Collections.reverse(reverseList);
+            for (AnswerModel.SuveryAnswer suveryAnswer : reverseList) {
+                if (suveryAnswer.getQuestionId().equals("iid_176")) {
+                    if (suveryAnswer.getAnswer().equals("1")) {
+                        if (looperHandler(reverseList, "iid_128"))
+                            if (looperHandler(reverseList, "iid_132"))
+                                nextPosition = executeQuestionId(532);
+                            else
+                                nextPosition = executeQuestionId(488);
+                        else
+                            nextPosition = executeQuestionId(488);
+
+
+                    } else {
+                        nextPosition = executeQuestionId(428);
+                    }
+                    break;
+                }
+            }
+        } else if (questionsModel.getQuestionId().equals("iid_436")) {
+            int answer = Integer.parseInt(ans);
+            if (answer == 99 || answer == 1) {
+                nextPosition = executeQuestionId(440);
+            } else if (answer == 2) {
+                Stack<AnswerModel.SuveryAnswer> reverseList = answerModel.getSuveryAnswers();
+                Collections.reverse(reverseList);
+                for (AnswerModel.SuveryAnswer suveryAnswer : reverseList) {
+                    if (suveryAnswer.getQuestionId().equals("iid_128")) {
+                        if (suveryAnswer.getAnswer().equals("1"))
+                            if (looperHandler(reverseList, "iid_132"))
+                                nextPosition = executeQuestionId(532);
+                            else
+                                nextPosition = executeQuestionId(488);
+                        else
+                            nextPosition = executeQuestionId(488);
+                        break;
+                    }
+                }
+            } else {
+                nextPosition = executeQuestionId(488);
+            }
+        } else if (questionsModel.getQuestionId().equals("iid_484")) {
+            Stack<AnswerModel.SuveryAnswer> reverseList = answerModel.getSuveryAnswers();
+            Collections.reverse(reverseList);
+            for (AnswerModel.SuveryAnswer suveryAnswer : reverseList) {
+                if (suveryAnswer.getQuestionId().equals("iid_128")) {
+                    if (suveryAnswer.getAnswer().equals("1"))
+                        if (looperHandler(reverseList, "iid_132"))
+                            nextPosition = executeQuestionId(532);
+                        else
+                            nextPosition = executeQuestionId(488);
+                    else
+                        nextPosition = executeQuestionId(488);
+                    break;
+                }
+            }
         }
 
 
@@ -630,6 +709,18 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         return 0;
     }
 
+
+    boolean looperHandler(List<AnswerModel.SuveryAnswer> reverseList, String id) {
+
+        for (AnswerModel.SuveryAnswer suveryAnswer : reverseList) {
+            if (suveryAnswer.getQuestionId().equals(id)) {
+                if (suveryAnswer.getAnswer().equals("1")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     @Override
     public void hideNext() {

@@ -358,11 +358,8 @@ public class SnappyNoSQL {
             if (rtfModels.size() > 1) {
                 temp.add(rtfModels.get(0));
                 temp.add(rtfModels.get(1));
-            } else {
-                temp.addAll(rtfModels);
+                answerModel.setMemberRtfModels(temp);
             }
-            rtfModels.clear();
-            answerModel.setMemberRtfModels(temp);
             snappyDB.put("AREA" + key, answerModel);
             storeKeyArea(key);
         } catch (SnappydbException e) {

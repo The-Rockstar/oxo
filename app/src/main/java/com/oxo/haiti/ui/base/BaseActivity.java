@@ -51,7 +51,7 @@ public abstract class BaseActivity extends AppCompatActivity implements DialogIn
             progressDialog.setMessage(getString(R.string.pleasewait));
             progressDialog.setCancelable(false);
             progressDialog.show();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -83,14 +83,21 @@ public abstract class BaseActivity extends AppCompatActivity implements DialogIn
         }
     }
 
-    protected void clearSaveState(String key) {
+    protected void clearSaveState(String key, boolean vanishRecord) {
+//        if (vanishRecord) {
         ContentStorage.getInstance(this).savePositionSurveyOne(0, key);
+//        }
         SnappyNoSQL.getInstance().removeSaveState(key);
         SnappyNoSQL.getInstance().removeStack(key);
     }
 
     protected void removePerson(String key, String Name) {
         try {
+            if (key != null) {
+                key = key.replace("TWO", "ONE");
+            }
+
+
             AreaModel areaModel = SnappyNoSQL.getInstance().getArea(key);
             List<RtfModel> rtfModels = new ArrayList<>(areaModel.getMemberRtfModels());
             for (RtfModel rtfModel : rtfModels) {
@@ -98,8 +105,15 @@ public abstract class BaseActivity extends AppCompatActivity implements DialogIn
                     areaModel.getMemberRtfModels().remove(rtfModel);
                 }
             }
+            if (rtfModels.size() == 0) {
+                clearSaveState(key, true);
+            }
             SnappyNoSQL.getInstance().saveArea(areaModel, key);
-        } catch (Exception e) {
+        } catch (
+                Exception e
+                )
+
+        {
 
         }
 

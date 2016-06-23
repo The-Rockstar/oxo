@@ -44,20 +44,35 @@ public class ResumeActivity extends AppCompatActivity {
             List<String> keys = SnappyNoSQL.getInstance().getKeysArea();
             for (String key : keys) {
                 AreaModel areaModel = SnappyNoSQL.getInstance().getArea(key);
-                if (areaModel.getMemberRtfModels().size() > 0) {
-                    areaModels.add(areaModel);
-                } else {
-                    SnappyNoSQL.getInstance().removeArea(key);
+                List<RtfModel> rtfModels = null;
+                try {
+                    rtfModels = areaModel.getMemberRtfModels();
+                } catch (Exception e) {
+                    rtfModels = null;
+                } finally {
+                    if (rtfModels != null) {
+                        if (areaModel.getMemberRtfModels().size() > 0) {
+                            areaModels.add(areaModel);
+                        } else {
+                            SnappyNoSQL.getInstance().removeArea(key);
+                        }
+                    } else {
+                        SnappyNoSQL.getInstance().removeArea(key);
+                    }
+
                 }
+
             }
             ListView listView = (ListView) findViewById(R.id.datalist);
 
             problemSolver();
             LocalAdapter localAdapter = new LocalAdapter(areaModels, sOneKeys);
             listView.setAdapter(localAdapter);
-            if (localAdapter.getCount() <= 0) {
-                listView.setVisibility(View.GONE);
-            }
+            if ((areaModels.size() + sOneKeys.size()) == 0) {
+                findViewById(R.id.max_mus).setVisibility(View.VISIBLE);
+            } else
+                findViewById(R.id.max_mus).setVisibility(View.GONE);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -131,12 +146,12 @@ public class ResumeActivity extends AppCompatActivity {
                         if (count == 0) {
                             linearLayout1.setVisibility(View.VISIBLE);
                             one.setText(users.getName());
-                            one.setTag(areaModel.get(position).get_id());
+                            one.setTag(areaModel.get(position).get_id().replace("ONE", "TWO"));
 
                         } else {
                             linearLayout2.setVisibility(View.VISIBLE);
                             two.setText(users.getName());
-                            two.setTag(areaModel.get(position).get_id());
+                            two.setTag(areaModel.get(position).get_id().replace("ONE", "TWO"));
                         }
                         count++;
                     }
@@ -175,49 +190,50 @@ public class ResumeActivity extends AppCompatActivity {
 
 
                 AnswerModel answerModel = SnappyNoSQL.getInstance().getSaveState(surveyOne.get(position - areaModel.size()));
-                AreaModel areaModel = executer(answerModel);
+                if (answerModel != null) {
+                    AreaModel areaModel = executer(answerModel);
+                    linearLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.activity_survey_two, null);
+                    TextView sit = (TextView) linearLayout.findViewById(R.id.sit);
+                    TextView gps = (TextView) linearLayout.findViewById(R.id.gps);
+                    TextView block = (TextView) linearLayout.findViewById(R.id.block);
+                    TextView hh = (TextView) linearLayout.findViewById(R.id.hh);
+                    TextView indu = (TextView) linearLayout.findViewById(R.id.ind);
+                    indu.setVisibility(View.VISIBLE);
+                    final LinearLayout linearLayout1 = (LinearLayout) linearLayout.findViewById(R.id.xmen);
+                    linearLayout1.setVisibility(View.GONE);
+                    final LinearLayout linearLayou = (LinearLayout) linearLayout.findViewById(R.id.mainlayout_one);
+                    linearLayou.setVisibility(View.GONE);
+                    final LinearLayout linearLayout2 = (LinearLayout) linearLayout.findViewById(R.id.mainlayout_two);
+                    linearLayout2.setVisibility(View.GONE);
 
-                linearLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.activity_survey_two, null);
-                TextView sit = (TextView) linearLayout.findViewById(R.id.sit);
-                TextView gps = (TextView) linearLayout.findViewById(R.id.gps);
-                TextView block = (TextView) linearLayout.findViewById(R.id.block);
-                TextView hh = (TextView) linearLayout.findViewById(R.id.hh);
-                TextView indu = (TextView) linearLayout.findViewById(R.id.ind);
-                indu.setVisibility(View.VISIBLE);
-                final LinearLayout linearLayout1 = (LinearLayout) linearLayout.findViewById(R.id.xmen);
-                linearLayout1.setVisibility(View.VISIBLE);
-                final LinearLayout linearLayou = (LinearLayout) linearLayout.findViewById(R.id.mainlayout_one);
-                linearLayou.setVisibility(View.GONE);
-                final LinearLayout linearLayout2 = (LinearLayout) linearLayout.findViewById(R.id.mainlayout_two);
-                linearLayout2.setVisibility(View.GONE);
-
-                final TextView one = (TextView) linearLayout.findViewById(R.id.one);
-                final TextView two = (TextView) linearLayout.findViewById(R.id.two);
+                    final TextView one = (TextView) linearLayout.findViewById(R.id.one);
+                    final TextView two = (TextView) linearLayout.findViewById(R.id.two);
 
 
-                sit.setText(areaModel.getSit());
-                gps.setText(areaModel.getGps());
-                block.setText(areaModel.getBlock());
-                hh.setText("" + areaModel.getSit() + areaModel.getBlock() + areaModel.getGps() + areaModel.getHH());
-                indu.setText(answerModel.getSurveryId());
-                int count = 0;
+                    sit.setText(areaModel.getSit());
+                    gps.setText(areaModel.getGps());
+                    block.setText(areaModel.getBlock());
+                    hh.setText("" + areaModel.getSit() + areaModel.getBlock() + areaModel.getGps() + areaModel.getHH());
+                    indu.setText(answerModel.getSurveryId());
+                    int count = 0;
 
-                hh.setTag(areaModel.get_id());
-                hh.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String id = (String) v.getTag();
-                        Intent intent = new Intent(ResumeActivity.this, FragmentControler.class);
-                        intent.putExtra("key", id);
-                        intent.putExtra("SURVEY", "ONE");
-                        intent.putExtra("mainId", id);
-                        intent.putExtra("RESUME", true);
-                        intent.putExtra("Name", one.getText());
+                    hh.setTag(answerModel.getGenerated_survey());
+                    hh.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            String id = (String) v.getTag();
+                            Intent intent = new Intent(ResumeActivity.this, FragmentControler.class);
+                            intent.putExtra("key", id);
+                            intent.putExtra("SURVEY", "ONE");
+                            intent.putExtra("mainId", id);
+                            intent.putExtra("RESUME", true);
+                            intent.putExtra("Name", one.getText());
 
-                        startActivity(intent);
-                    }
-                });
-
+                            startActivity(intent);
+                        }
+                    });
+                } else
+                    linearLayout.setVisibility(View.INVISIBLE);
 
             }
             return linearLayout;
