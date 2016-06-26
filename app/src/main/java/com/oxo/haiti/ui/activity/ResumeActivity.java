@@ -1,8 +1,8 @@
 package com.oxo.haiti.ui.activity;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -15,18 +15,15 @@ import android.widget.TextView;
 import com.oxo.haiti.R;
 import com.oxo.haiti.model.AnswerModel;
 import com.oxo.haiti.model.AreaModel;
-import com.oxo.haiti.model.RtfModel;
+import com.oxo.haiti.model.PersonModel;
 import com.oxo.haiti.storage.SnappyNoSQL;
 
-import java.util.AbstractQueue;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class ResumeActivity extends AppCompatActivity {
 
-    List<AreaModel> areaModels = new ArrayList<>();
+    private List<AreaModel> areaModels = new ArrayList<>();
     private List<String> sOneKeys = new ArrayList<>();
 
     @Override
@@ -44,7 +41,7 @@ public class ResumeActivity extends AppCompatActivity {
             List<String> keys = SnappyNoSQL.getInstance().getKeysArea();
             for (String key : keys) {
                 AreaModel areaModel = SnappyNoSQL.getInstance().getArea(key);
-                List<RtfModel> rtfModels = null;
+                List<PersonModel> rtfModels = null;
                 try {
                     rtfModels = areaModel.getMemberRtfModels();
                 } catch (Exception e) {
@@ -140,8 +137,8 @@ public class ResumeActivity extends AppCompatActivity {
                 indu.setText(areaModel.get(position).get_id());
                 int count = 0;
 
-                List<RtfModel> rtfModels = areaModel.get(position).getMemberRtfModels();
-                for (RtfModel users : rtfModels) {
+                List<PersonModel> rtfModels = areaModel.get(position).getMemberRtfModels();
+                for (PersonModel users : rtfModels) {
                     if (!one.getText().equals(users.getName()) && !TextUtils.isEmpty(users.getName())) {
                         if (count == 0) {
                             linearLayout1.setVisibility(View.VISIBLE);

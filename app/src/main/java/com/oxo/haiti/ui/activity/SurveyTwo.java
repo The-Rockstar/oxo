@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.oxo.haiti.R;
 import com.oxo.haiti.model.AreaModel;
-import com.oxo.haiti.model.RtfModel;
+import com.oxo.haiti.model.PersonModel;
 import com.oxo.haiti.storage.SnappyNoSQL;
 
 import java.util.Collections;
@@ -28,10 +28,10 @@ public class SurveyTwo extends AppCompatActivity implements View.OnClickListener
         TextView two = (TextView) findViewById(R.id.two);
         areaModel = SnappyNoSQL.getInstance().getArea(getIntent().getStringExtra("key"));
         int count = 0;
-        List<RtfModel> rtfModels = areaModel.getMemberRtfModels();
+        List<PersonModel> rtfModels = areaModel.getMemberRtfModels();
         if (rtfModels != null)
             Collections.shuffle(rtfModels);
-        for (RtfModel users : rtfModels) {
+        for (PersonModel users : rtfModels) {
             if (!one.getText().equals(users.getName()) && !TextUtils.isEmpty(users.getName())) {
                 if (count == 0)
                     one.setText(users.getName());

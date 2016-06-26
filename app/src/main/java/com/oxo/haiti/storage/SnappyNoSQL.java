@@ -5,8 +5,8 @@ import android.content.Context;
 import com.oxo.haiti.model.AnswerModel;
 import com.oxo.haiti.model.AreaModel;
 import com.oxo.haiti.model.Condition;
+import com.oxo.haiti.model.PersonModel;
 import com.oxo.haiti.model.QuestionsModel;
-import com.oxo.haiti.model.RtfModel;
 import com.oxo.haiti.model.UserModel;
 import com.snappydb.DB;
 import com.snappydb.SnappyDB;
@@ -350,16 +350,23 @@ public class SnappyNoSQL {
     }
 
 
+    List<PersonModel> personModels = new ArrayList<>();
+
     public AreaModel saveArea(AreaModel answerModel, String key) {
+        personModels.clear();
         try {
-            List<RtfModel> rtfModels = answerModel.getMemberRtfModels();
+            List<PersonModel> rtfModels = answerModel.getMemberRtfModels();
             Collections.shuffle(rtfModels);
-            List<RtfModel> temp = new ArrayList<>();
-            if (rtfModels.size() > 1) {
-                temp.add(rtfModels.get(0));
-                temp.add(rtfModels.get(1));
-                answerModel.setMemberRtfModels(temp);
+            for (PersonModel personModel : rtfModels) {
+                if (personModel.getTypo().equals("hh_person"))
+                    if (!personModels.contains(personModel)) {
+                        personModels.add(personModel);
+                    }
             }
+            if (personModels.size() >= 2) {
+                personModels = personModels.subList(0, 2);
+            }
+            answerModel.setMemberRtfModels(personModels);
             snappyDB.put("AREA" + key, answerModel);
             storeKeyArea(key);
         } catch (SnappydbException e) {

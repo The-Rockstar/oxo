@@ -83,17 +83,17 @@ public class AreaModel implements Serializable {
 
     @SerializedName("members")
     @Expose
-    private List<RtfModel> memberRtfModels = new ArrayList<>();
+    private List<PersonModel> memberRtfModels = new ArrayList<>();
 
-    public void setMemberRtfModels(RtfModel memberRtfModels) {
+    public void setMemberRtfModels(PersonModel memberRtfModels) {
         this.memberRtfModels.add(memberRtfModels);
     }
 
-    public void setMemberRtfModels(List<RtfModel> memberRtfModels) {
-        this.memberRtfModels = memberRtfModels;
+    public void setMemberRtfModels(List<PersonModel> memberRtfModels) {
+        this.memberRtfModels = new ArrayList<>(memberRtfModels);
     }
 
-    public List<RtfModel> getMemberRtfModels() {
+    public List<PersonModel> getMemberRtfModels() {
         return memberRtfModels;
     }
 

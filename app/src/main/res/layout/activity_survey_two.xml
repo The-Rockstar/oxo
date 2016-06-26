@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:padding="15dp"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="15dp">
 
     <View
         android:layout_width="match_parent"
@@ -13,7 +13,7 @@
     <LinearLayout
         android:id="@+id/maxproblem"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="200dp"
         android:orientation="horizontal">
 
 
@@ -29,7 +29,7 @@
                 android:gravity="center"
                 android:padding="10dp"
                 android:text="sit"
-                android:textSize="@dimen/text_size" />
+                android:textSize="16dp" />
 
             <View
                 android:layout_width="match_parent"
@@ -64,7 +64,7 @@
                 android:gravity="center"
                 android:padding="10dp"
                 android:text="blòk"
-                android:textSize="@dimen/text_size" />
+                android:textSize="16dp" />
 
             <View
                 android:layout_width="match_parent"
@@ -78,7 +78,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="10dp"
-                android:textSize="@dimen/text_size" />
+                android:textSize="16dp" />
 
 
         </LinearLayout>
@@ -102,7 +102,7 @@
                 android:gravity="center"
                 android:padding="10dp"
                 android:text="Nimewo GPS kowòdone"
-                android:textSize="@dimen/text_size" />
+                android:textSize="16dp" />
 
             <View
                 android:layout_width="match_parent"
@@ -115,7 +115,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="10dp"
-                android:textSize="@dimen/text_size" />
+                android:textSize="16dp" />
 
 
         </LinearLayout>
@@ -138,7 +138,7 @@
                 android:gravity="center"
                 android:padding="10dp"
                 android:text="Nimewo kay la"
-                android:textSize="@dimen/text_size" />
+                android:textSize="16dp" />
 
             <View
                 android:layout_width="match_parent"
@@ -152,7 +152,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="10dp"
-                android:textSize="@dimen/text_size" />
+                android:textSize="16dp" />
 
 
         </LinearLayout>
@@ -177,7 +177,7 @@
                 android:gravity="center"
                 android:padding="10dp"
                 android:text="Indu"
-                android:textSize="@dimen/text_size" />
+                android:textSize="16dp" />
 
             <View
                 android:layout_width="match_parent"
@@ -190,8 +190,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="10dp"
-                android:visibility="gone"
-                android:textSize="@dimen/text_size" />
+                android:textSize="16dp"
+                android:visibility="gone" />
 
 
         </LinearLayout>
@@ -223,7 +223,7 @@
                 android:layout_height="match_parent"
                 android:padding="10dp"
                 android:text=""
-                android:textSize="@dimen/text_size" />
+                android:textSize="16dp" />
 
         </LinearLayout>
 
@@ -246,6 +246,7 @@
                 android:layout_height="100dp"
                 android:padding="10dp"
                 android:text="Individual B" />
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
@@ -257,9 +258,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="10dp"
-                android:textSize="@dimen/text_size" />
+                android:textSize="16dp" />
         </LinearLayout>
-
 
 
     </LinearLayout>

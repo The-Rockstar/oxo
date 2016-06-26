@@ -97,7 +97,7 @@ public class AnswerModel implements Serializable {
     }
 
 
-    public static class SuveryAnswer  implements Serializable{
+    public static class SuveryAnswer implements Serializable {
 
         @SerializedName("question_id")
         @Expose
@@ -114,9 +114,54 @@ public class AnswerModel implements Serializable {
         private int next_id = 0;
 
 
+        @SerializedName("loaded")
+        @Expose
+        private boolean isLoaded = false;
 
+        @SerializedName("loadedAge")
+        @Expose
+        private boolean isLoadedAge = false;
 
+        @SerializedName("loadedName")
+        @Expose
+        private boolean isLoadedName = false;
 
+        @SerializedName("loadedSex")
+        @Expose
+        private boolean isLoadedSex = false;
+
+        public boolean isLoadedAge() {
+            return isLoadedAge;
+        }
+
+        public void setLoadedAge(boolean loadedAge) {
+            isLoadedAge = loadedAge;
+        }
+
+        public boolean isLoadedName() {
+            return isLoadedName;
+        }
+
+        public void setLoadedName(boolean loadedName) {
+            isLoadedName = loadedName;
+        }
+
+        public boolean isLoadedSex() {
+            return isLoadedSex;
+        }
+
+        public void setLoadedSex(boolean loadedSex) {
+            isLoadedSex = loadedSex;
+        }
+
+        public boolean isLoaded() {
+
+            return isLoaded;
+        }
+
+        public void setLoaded(boolean loaded) {
+            isLoaded = loaded;
+        }
 
         /**
          * @return The nextid

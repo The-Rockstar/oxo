@@ -23,7 +23,6 @@ import com.oxo.haiti.model.AnswerModel;
 import com.oxo.haiti.model.AreaModel;
 import com.oxo.haiti.model.PersonModel;
 import com.oxo.haiti.model.QuestionsModel;
-import com.oxo.haiti.model.RtfModel;
 import com.oxo.haiti.service.RestAdapter;
 import com.oxo.haiti.storage.ContentStorage;
 import com.oxo.haiti.storage.SnappyNoSQL;
@@ -63,6 +62,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     List<PersonModel> personModels = new ArrayList<>();
     public static boolean isLoaded = false;
     public static boolean resumeFlag = false;
+    public List<PersonModel> OneCilds = new ArrayList<>();
 
 
     @Override
@@ -99,7 +99,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         findViewById(R.id.next).setOnClickListener(this);
         findViewById(R.id.stop_survey).setOnClickListener(this);
         setUpToolbar();
-//        viewPager.setCurrentItem(executeQuestionId(252));
+        //viewPager.setCurrentItem(executeQuestionId(252));
     }
 
     public List<QuestionsModel> getQuestionsModelList() {
@@ -267,57 +267,77 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
 
     public List<PersonModel> getPersonModels() {
-        executeAnswers();
         return personModels;
     }
 
     public void executeAnswers() {
-        personModels.clear();
+//        personModels.clear();
         loopOne = 0;
         loopTwo = 0;
         loopThree = 0;
         loopFour = 0;
         PersonModel personModel = null;
         for (AnswerModel.SuveryAnswer answer : answerModel.getSuveryAnswers()) {
-
-            if (answer.getQuestionId().equals("hid_140") && !TextUtils.isEmpty(answer.getAnswer())) {
-                personModel = new PersonModel();
-                personModel.setName(answer.getAnswer());
-                personModel.setTypo("hh_person");
-
-            }
-            if (answer.getQuestionId().equals("hid_144") && !TextUtils.isEmpty(answer.getAnswer())) {
-                if (personModel != null)
-                    personModel.setSex(answer.getAnswer());
-            }
             if (answer.getQuestionId().equals("hid_148") && !TextUtils.isEmpty(answer.getAnswer())) {
-                if (personModel != null) {
+                if (!answer.isLoadedName()) {
+                    answer.setLoadedName(true);
+                    personModel = new PersonModel();
+                    personModel.setId("" + new Random().nextInt(99));
+                    personModel.setTypo("hh_person");
                     personModel.setAge(answer.getAnswer());
-                    personModels.add(personModel);
+                    loopSexy:
+                    for (AnswerModel.SuveryAnswer innerAnswer : answerModel.getSuveryAnswers()) {
+                        if (innerAnswer.getQuestionId().equals("hid_144") && !TextUtils.isEmpty(answer.getAnswer())) {
+                            if (!innerAnswer.isLoadedSex()) {
+                                innerAnswer.setLoadedSex(true);
+                                personModel.setSex(innerAnswer.getAnswer());
+                                break loopSexy;
+                            }
+                        }
+                    }
+                    loopName:
+                    for (AnswerModel.SuveryAnswer innerAnswer : answerModel.getSuveryAnswers()) {
+                        if (innerAnswer.getQuestionId().equals("hid_140") && !TextUtils.isEmpty(answer.getAnswer())) {
+                            if (!innerAnswer.isLoadedName()) {
+                                innerAnswer.setLoadedName(true);
+                                personModel.setName(innerAnswer.getAnswer());
+                                break loopName;
+                            }
+                        }
+                        if (!personModels.contains(personModel)) {
+                            personModels.add(personModel);
+                            areaModel.setMemberRtfModels(personModels);
+                        }
+                    }
                 }
-            }
 
-
-            if (answer.getQuestionId().equals("hid_176") && !TextUtils.isEmpty(answer.getAnswer())) {
-                personModel = new PersonModel();
-                personModel.setSex(answer.getAnswer());
-                personModel.setTypo("hh_children");
             }
             if (answer.getQuestionId().equals("hid_180") && !TextUtils.isEmpty(answer.getAnswer())) {
-                if (personModel != null) {
+                if (!answer.isLoadedName()) {
+                    answer.setLoadedName(true);
+                    personModel = new PersonModel();
+                    personModel.setTypo("hh_children");
+                    personModel.setId("" + new Random().nextInt(99));
                     personModel.setAge(answer.getAnswer());
-                    personModels.add(personModel);
-
+                    innerLoop:
+                    for (AnswerModel.SuveryAnswer innerAnswer : answerModel.getSuveryAnswers()) {
+                        if (innerAnswer.getQuestionId().equals("hid_176") && !TextUtils.isEmpty(answer.getAnswer())) {
+                            if (!innerAnswer.isLoadedSex()) {
+                                innerAnswer.setLoadedSex(true);
+                                personModel.setSex(innerAnswer.getAnswer());
+                                break innerLoop;
+                            }
+                        }
+                    }
+                    if (!personModels.contains(personModel)) {
+                        personModels.add(personModel);
+                        areaModel.setMemberRtfModels(personModels);
+                    }
                 }
             }
 
             if (answer.getQuestionId().equals("hid_140") && !TextUtils.isEmpty(answer.getAnswer())) {
                 loopOne++;
-                RtfModel usersModel = new RtfModel();
-                usersModel.setName(answer.getAnswer());
-                usersModel.setSurveyId(key);
-                usersModel.setUserId("" + new Random().nextInt(99));
-                areaModel.setMemberRtfModels(usersModel);
             } else if (answer.getQuestionId().equals("hid_2") || answer.getQuestionId().equals("hid_3") || answer.getQuestionId().equals("hid_4") || answer.getQuestionId().equals("hid_5") && !TextUtils.isEmpty(answer.getAnswer())) {
                 areaModel.setBlock(answer.getAnswer());
             } else if (answer.getQuestionId().equals("hid_1") && !TextUtils.isEmpty(answer.getAnswer())) {
@@ -342,26 +362,27 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 loopFour++;
             }
         }
+
     }
 
 
     void backgroundStart() {
         new AsyncTask() {
             @Override
-            protected Object doInBackground (Object[]params){
+            protected Object doInBackground(Object[] params) {
                 SyncData();
                 clearSaveState(key, getIntent().getExtras().getString("SURVEY").equals("ONE"));
                 return null;
             }
 
             @Override
-            protected void onPreExecute () {
+            protected void onPreExecute() {
                 super.onPreExecute();
                 showProgress();
             }
 
             @Override
-            protected void onPostExecute (Object o){
+            protected void onPostExecute(Object o) {
                 super.onPostExecute(o);
                 hideBar();
                 runOnUiThread(new Runnable() {
@@ -453,38 +474,58 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         popup.show();
     }
 
+    boolean executed = false;
 
     @Override
     public void getNextPosition(int position, QuestionsModel questionsModel, String answer, boolean isNew, Object object, boolean localIsRepeater) {
         Log.d("question Id ==", questionsModel.getQuestionId());
+        int next = executeQuestionId(position);
 
         if (questionsModel.getQuestionId().equals("hid_276")) {
-            if (answer.equals("2")) {
+            if (answer.equals("1")) {
+                nextPosition = executeQuestionId(277);
+                for (QuestionsModel.Answer x : questionsModel.getAnswers())
+                    x.setOptionNext(277);
+
+            } else {
                 if (FragmentControler.childCount == 0) {
-                    nextPosition = 365;
+                    nextPosition = executeQuestionId(365);
                     for (QuestionsModel.Answer x : questionsModel.getAnswers())
                         x.setOptionNext(365);
                 } else if (FragmentControler.childCount == 1) {
-                    nextPosition = 305;
+                    nextPosition = executeQuestionId(305);
                     for (QuestionsModel.Answer x : questionsModel.getAnswers())
                         x.setOptionNext(305);
-                }
-            }
-        }
-        if (questionsModel.getQuestionId().equals("hid_304")) {
-            if (answer.equals("2")) {
-                if (FragmentControler.childCount == 0) {
-                    nextPosition = 365;
-                    for (QuestionsModel.Answer x : questionsModel.getAnswers())
-                        x.setOptionNext(365);
-                } else if (FragmentControler.childCount == 1) {
-                    nextPosition = 305;
-                    for (QuestionsModel.Answer x : questionsModel.getAnswers())
+                } else if (FragmentControler.childCount >= 2) {
+                    nextPosition = executeQuestionId(305);
+                    for (QuestionsModel.Answer x : questionsModel.getAnswers()) {
                         x.setOptionNext(305);
+                    }
+                } else {
+
                 }
             }
         }
 
+        if (!executed) {
+            if (FragmentControler.childCount >= 2) {
+                executed = true;
+                if (questionsModel.getQuestionId().equals("hid_328")) {
+                    nextPosition = executeQuestionId(308);
+                    showDialogMessage("Testing");
+                    for (QuestionsModel.Answer x : questionsModel.getAnswers())
+                        x.setOptionNext(308);
+
+                }
+            } else if (executed) {
+                if (questionsModel.getQuestionId().equals("hid_328")) {
+                    nextPosition = executeQuestionId(332);
+                    for (QuestionsModel.Answer x : questionsModel.getAnswers())
+                        x.setOptionNext(332);
+
+                }
+            }
+        }
 
         fetchViewData(nextPosition, answer, questionsModel);
 
@@ -493,7 +534,6 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         }
 
         findViewById(R.id.next).setVisibility(View.VISIBLE);
-        int next = executeQuestionId(position);
 //        if (isNew) {
         suveryAnswer = new AnswerModel.SuveryAnswer();
         suveryAnswer.setAnswer(answer);

@@ -33,7 +33,6 @@ import com.oxo.haiti.model.AreaModel;
 import com.oxo.haiti.model.Condition;
 import com.oxo.haiti.model.PersonModel;
 import com.oxo.haiti.model.QuestionsModel;
-import com.oxo.haiti.model.RtfModel;
 import com.oxo.haiti.storage.SnappyNoSQL;
 import com.oxo.haiti.ui.activity.FragmentControler;
 import com.oxo.haiti.ui.base.BaseActivity;
@@ -43,7 +42,6 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,219 +83,250 @@ public class DynamicFragment extends Fragment {
         return dynamicFragment;
     }
 
+
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (isVisibleToUser) {
             new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        answerContainer.removeAllViews();
-                        FragmentControler fragmentControler = (FragmentControler) getActivity();
+                                          @Override
+                                          public void run() {
+                                              try {
+                                                  answerContainer.removeAllViews();
+                                                  FragmentControler fragmentControler = (FragmentControler) getActivity();
 
-                        if (FragmentControler.resumeFlag) {
-                            for (AnswerModel.SuveryAnswer suveryAnswer : answerModel.getSuveryAnswers()) {
-                                if (suveryAnswer != null && questionDec != null && questionsModel.getQuestionId().equals(suveryAnswer.getQuestionId())) {
-                                    DynamicFragment.this.suveryAnswer = suveryAnswer;
-                                }
-                            }
-                        } else {
-                            DynamicFragment.this.suveryAnswer = null;
-                            editTextAnswers.clear();
-                            if (questionsModel.getQuestionType().equals("message") || questionsModel.getQuestionType().equals("hh_profile") || questionsModel.getQuestionType().equals("hh_person") || questionsModel.getQuestionType().equals("hh_children")) {
+                                                  if (FragmentControler.resumeFlag) {
+                                                      for (AnswerModel.SuveryAnswer suveryAnswer : answerModel.getSuveryAnswers()) {
+                                                          if (suveryAnswer != null && questionDec != null && questionsModel.getQuestionId().equals(suveryAnswer.getQuestionId())) {
+                                                              DynamicFragment.this.suveryAnswer = suveryAnswer;
+                                                          }
+                                                      }
+                                                  } else {
+                                                      DynamicFragment.this.suveryAnswer = null;
+                                                      editTextAnswers.clear();
+                                                      if (questionsModel.getQuestionType().equals("message") || questionsModel.getQuestionType().equals("hh_profile") || questionsModel.getQuestionType().equals("hh_person") || questionsModel.getQuestionType().equals("hh_children")) {
 
-                            } else
-                                fragmentControler.hideNext();
-                        }
-
-
-                        if (questionsModel.getQuestionType().equals("radio"))
-                            generateRadioButtonView();
-                        else if (questionsModel.getQuestionType().equals("message"))
-                            setMessageType();
-                        else if (questionsModel.getQuestionType().equals("checkbox"))
-                            checkBoxInput();
-                        else if (questionsModel.getQuestionType().equals("checkbox_radio"))
-                            checkBox_radio();
-                        else if (questionsModel.getQuestionType().equals("number_radio"))
-                            dynamicTextInput();
-                        else if (questionsModel.getQuestionType().equals("number_number_radio"))
-                            populateBoth();
-                        else if (questionsModel.getQuestionType().equals("text_text"))
-                            dynamicTextInput();
-                        else if (questionsModel.getQuestionType().equals("text_text_radio"))
-                            dynamicTextInput();
-                        else if (questionsModel.getQuestionType().equals("text_radio"))
-                            dynamicTextInput();
-                        else if (questionsModel.getQuestionType().equals("select"))
-                            selector();
-                        else if (questionsModel.getQuestionType().equals("number_number"))
-                            populateBoth();
-                        else if (questionsModel.getQuestionType().equals("hh_profile"))
-                            showAreaView();
-                        else if (questionsModel.getQuestionType().equals("hh_person"))
-                            showPerson("hh_person");
-                        else if (questionsModel.getQuestionType().equals("hh_children"))
-                            showPerson("hh_children");
-                        else if (questionsModel.getQuestionType().equals("radio_radio_radio_radio_radio_radio"))
-                            genrateRadioGroups();
-                        else
-                            generateEt();
+                                                      } else
+                                                          fragmentControler.hideNext();
+                                                  }
 
 
-                        if (questionsModel.getQuestionId().equals("hid_304")) {
-                            if (FragmentControler.childCount == 1) {
-                                for (QuestionsModel.Answer answer : questionsModel.getAnswers())
-                                    answer.setOptionNext(305);
-                            }
-                        }
+                                                  if (questionsModel.getQuestionType().equals("radio"))
+                                                      generateRadioButtonView();
+                                                  else if (questionsModel.getQuestionType().equals("message"))
+                                                      setMessageType();
+                                                  else if (questionsModel.getQuestionType().equals("checkbox"))
+                                                      checkBoxInput();
+                                                  else if (questionsModel.getQuestionType().equals("checkbox_radio"))
+                                                      checkBox_radio();
+                                                  else if (questionsModel.getQuestionType().equals("number_radio"))
+                                                      dynamicTextInput();
+                                                  else if (questionsModel.getQuestionType().equals("number_number_radio"))
+                                                      populateBoth();
+                                                  else if (questionsModel.getQuestionType().equals("text_text"))
+                                                      dynamicTextInput();
+                                                  else if (questionsModel.getQuestionType().equals("text_text_radio"))
+                                                      dynamicTextInput();
+                                                  else if (questionsModel.getQuestionType().equals("text_radio"))
+                                                      dynamicTextInput();
+                                                  else if (questionsModel.getQuestionType().equals("select"))
+                                                      selector();
+                                                  else if (questionsModel.getQuestionType().equals("number_number"))
+                                                      populateBoth();
+                                                  else if (questionsModel.getQuestionType().equals("hh_profile"))
+                                                      showAreaView();
+                                                  else if (questionsModel.getQuestionType().equals("hh_person"))
+                                                      showPerson("hh_person");
+                                                  else if (questionsModel.getQuestionType().equals("hh_children"))
+                                                      showPerson("hh_children");
+                                                  else if (questionsModel.getQuestionType().equals("radio_radio_radio_radio_radio_radio"))
+                                                      genrateRadioGroups();
+                                                  else
+                                                      generateEt();
 
-                        if (questionsModel.getQuestionId().equals("hid_304")) {
-                            if (FragmentControler.childCount == 0) {
-                                for (QuestionsModel.Answer answer : questionsModel.getAnswers())
-                                    answer.setOptionNext(365);
-                            }
-                        }
 
-                        if (questionsModel.getQuestionId().equals("hid_328")) {
-                            if (FragmentControler.childCount >= 2) {
-                                if (!FragmentControler.isLoaded) {
-                                    for (QuestionsModel.Answer answer : questionsModel.getAnswers())
-                                        answer.setOptionNext(308);
-                                    FragmentControler.isLoaded = true;
-                                } else {
-                                    for (QuestionsModel.Answer answer : questionsModel.getAnswers())
-                                        answer.setOptionNext(332);
-                                }
-                            }
-                        }
+                                                  if (questionsModel.getQuestionId().equals("hid_304")) {
+                                                      if (FragmentControler.childCount == 1) {
+                                                          for (QuestionsModel.Answer answer : questionsModel.getAnswers())
+                                                              answer.setOptionNext(305);
+                                                      }
+                                                  }
 
-                        List<Condition> conditions = SnappyNoSQL.getInstance().getConditions();
-                        for (Condition condition : conditions) {
-                            if (questionsModel.getQuestionId().equals(condition.getKey())) {
-                                Stack<AnswerModel.SuveryAnswer> reverseList = answerModel.getSuveryAnswers();
+                                                  if (questionsModel.getQuestionId().equals("hid_304")) {
+                                                      if (FragmentControler.childCount == 0) {
+                                                          for (QuestionsModel.Answer answer : questionsModel.getAnswers())
+                                                              answer.setOptionNext(365);
+                                                      }
+                                                  }
+
+                                                  if (questionsModel.getQuestionId().equals("hid_328")) {
+                                                      if (FragmentControler.childCount >= 2) {
+                                                          if (!FragmentControler.isLoaded) {
+                                                              for (QuestionsModel.Answer answer : questionsModel.getAnswers())
+                                                                  answer.setOptionNext(308);
+                                                              FragmentControler.isLoaded = true;
+                                                          } else {
+                                                              for (QuestionsModel.Answer answer : questionsModel.getAnswers())
+                                                                  answer.setOptionNext(332);
+                                                          }
+                                                      }
+                                                  }
+
+                                                  if (questionsModel.getQuestionId().equals("hid_308")) {
+                                                      if (FragmentControler.childCount >= 2) {
+                                                          if (FragmentControler.isLoaded) {
+                                                              String s = "Kounyea m vle pale de timoun ki se yon [A3a] ki genyen [A3b] lane";
+                                                              List<PersonModel> rtfModels = fragmentControler.getPersonModels();
+                                                              for (PersonModel personModel : rtfModels) {
+                                                                  if (personModel.getTypo().equals("hh_children") && !fragmentControler.OneCilds.contains(personModel)) {
+                                                                      s = s.replace("[A3a]", personModel.getSex().equals("1") ? "Gason" : "Fi");
+                                                                      s = s.replace("[A3b]", personModel.getAge());
+                                                                  }
+                                                              }
+                                                              fragmentControler.showDialogMessage(s);
+                                                          }
+                                                      }
+                                                  }
+
+
+                                                  List<Condition> conditions = SnappyNoSQL.getInstance().getConditions();
+                                                  for (Condition condition : conditions) {
+                                                      if (questionsModel.getQuestionId().equals(condition.getKey())) {
+                                                          Stack<AnswerModel.SuveryAnswer> reverseList = answerModel.getSuveryAnswers();
 //                                Collections.reverse(reverseList);
-                                for (AnswerModel.SuveryAnswer answer : reverseList) {
-                                    for (Condition.ConditionMode conditionMode : condition.getValue().getConditions()) {
-                                        if (answer.getQuestionId().equals(conditionMode.getQuestionOrder())) {
-                                            if (conditionMode.getCompare().equals("==")) {
-                                                if (Integer.parseInt(answer.getAnswer()) == conditionMode.getValue()) {
-                                                    for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
-                                                        answer1.setOptionNext(conditionMode.getQuestionNext());
+                                                          for (AnswerModel.SuveryAnswer answer : reverseList) {
+                                                              for (Condition.ConditionMode conditionMode : condition.getValue().getConditions()) {
+                                                                  if (answer.getQuestionId().equals(conditionMode.getQuestionOrder())) {
+                                                                      if (conditionMode.getCompare().equals("==")) {
+                                                                          if (Integer.parseInt(answer.getAnswer()) == conditionMode.getValue()) {
+                                                                              for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
+                                                                                  answer1.setOptionNext(conditionMode.getQuestionNext());
 
-                                                    }
-                                                    break;
-                                                }
-                                            } else if (conditionMode.getCompare().equals("<")) {
-                                                if (Integer.parseInt(answer.getAnswer()) < conditionMode.getValue()) {
-                                                    for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
-                                                        answer1.setOptionNext(conditionMode.getQuestionNext());
-                                                    }
-                                                    break;
-                                                }
-                                            } else if (conditionMode.getCompare().equals(">")) {
-                                                if (Integer.parseInt(answer.getAnswer()) > conditionMode.getValue()) {
-                                                    for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
-                                                        answer1.setOptionNext(conditionMode.getQuestionNext());
-                                                    }
-                                                    break;
-                                                }
-                                            }
+                                                                              }
+                                                                              break;
+                                                                          }
+                                                                      } else if (conditionMode.getCompare().equals("<")) {
+                                                                          if (Integer.parseInt(answer.getAnswer()) < conditionMode.getValue()) {
+                                                                              for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
+                                                                                  answer1.setOptionNext(conditionMode.getQuestionNext());
+                                                                              }
+                                                                              break;
+                                                                          }
+                                                                      } else if (conditionMode.getCompare().equals(">")) {
+                                                                          if (Integer.parseInt(answer.getAnswer()) > conditionMode.getValue()) {
+                                                                              for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
+                                                                                  answer1.setOptionNext(conditionMode.getQuestionNext());
+                                                                              }
+                                                                              break;
+                                                                          }
+                                                                      }
 
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                                                                  }
+                                                              }
+                                                          }
+                                                      }
+                                                  }
 
-                        if (!TextUtils.isEmpty(questionsModel.getQuestionText())) {
+                                                  if (!TextUtils.isEmpty(questionsModel.getQuestionText())) {
+                                                      String source = questionsModel.getQuestionText();
+                                                      if (questionsModel.getQuestionId().equals("hid_365")) {
+                                                          AreaModel areaModel = fragmentControler.saveAreax();
+                                                          List<PersonModel> rtfModels = areaModel.getMemberRtfModels();
+                                                          String s = "";
+                                                          if (rtfModels.size() > 0) {
+                                                              for (PersonModel personModel : rtfModels) {
+                                                                  if (personModel.getName() != null) {
+                                                                      if (s.contains("_A")) {
+                                                                          s = s.concat(" epi ");
+                                                                          s = s.concat(addAgeSex(1, personModel, areaModel, "_B"));
+                                                                          break;
 
-                            String source = questionsModel.getQuestionText();
-                            if (questionsModel.getQuestionOrder() == 365) {
-                                FragmentControler fragmentControler1 = (FragmentControler) getActivity();
-                                fragmentControler1.getAreaModel();
-                                AreaModel areaModel = fragmentControler.saveAreax();
-                                List<RtfModel> rtfModels = areaModel.getMemberRtfModels();
-                                String s = "";
-                                if (rtfModels.size() > 0) {
-                                    s = addAgeSex(rtfModels.get(0).getName());
+                                                                      }
+                                                                      s = addAgeSex(0, personModel, areaModel, "_A");
+                                                                  }
+                                                              }
+                                                          }
 
-                                    if (rtfModels.size() > 1 && !rtfModels.get(1).getName().equals(rtfModels.get(0).getName())) {
-                                        s = s.concat(" epi ");
-                                        s = s.concat(addAgeSex(rtfModels.get(1).getName()));
-                                    }
-                                }
+                                                          s = source.replace("random_selected_persons", s);
+                                                          headerTextView.setText(Html.fromHtml(s));
 
-                                s = source.replace("random_selected_persons", s);
-                                headerTextView.setText(Html.fromHtml(s));
+                                                      } else if (questionsModel.getQuestionId().equals("hid_305")) {
+                                                          String s = questionsModel.getQuestionText();
+                                                          List<PersonModel> rtfModels = fragmentControler.getPersonModels();
+                                                          for (PersonModel personModel : rtfModels) {
+                                                              if (personModel.getTypo().equals("hh_children")) {
+                                                                  fragmentControler.OneCilds.add(personModel);
+                                                                  s = s.replace("[A3a]", personModel.getSex().equals("1") ? "Gason" : "Fi");
+                                                                  s = s.replace("[A3b]", personModel.getAge());
+                                                                  break;
+                                                              }
 
-                            } else if (source.contains("#current_person#")) {
-                                source = source.replace("#current_person#", getActivity().getIntent().getStringExtra("Name"));
-                                headerTextView.setText(Html.fromHtml(source));
-                            } else if (source.contains("#n1#") || source.contains("#n2#") || source.contains("#n3#") || source.contains("#n4#")) {
-                                FragmentControler fragmentControler1 = (FragmentControler) getActivity();
-                                fragmentControler1.executeAnswers();
-                                if (source.contains("#n1#")) {
-                                    if (questionsModel.getQuestionId().equals("hid_140")) {
-                                        int count = FragmentControler.loopOne + 1;
-                                        source = source.replace("#n1#", count + "");
-                                    } else
-                                        source = source.replace("#n1#", FragmentControler.loopOne == 0 ? "" + 1 : "" + FragmentControler.loopOne);
+                                                          }
+                                                          headerTextView.setText(Html.fromHtml(s));
 
-                                } else if (source.contains("#n2#")) {
-                                    if (questionsModel.getQuestionId().equals("hid_176")) {
-                                        int count = FragmentControler.loopTwo + 1;
-                                        source = source.replace("#n2#", count + "");
-                                    } else
-                                        source = source.replace("#n2#", FragmentControler.loopTwo == 0 ? "" + 1 : "" + FragmentControler.loopTwo);
-                                } else if (source.contains("#n3#")) {
-                                    if (questionsModel.getQuestionId().equals("hid_244")) {
-                                        int count = FragmentControler.loopThree + 1;
-                                        source = source.replace("#n3#", count + "");
-                                    } else
-                                        source = source.replace("#n3#", FragmentControler.loopThree == 0 ? "" + 1 : "" + FragmentControler.loopThree);
-                                } else if (source.contains("#n4#")) {
-                                    if (questionsModel.getQuestionId().equals("hid_280")) {
-                                        int count = FragmentControler.loopFour + 1;
-                                        source = source.replace("#n4#", count + "");
-                                    } else
-                                        source = source.replace("#n4#", FragmentControler.loopFour == 0 ? "" + 1 : "" + FragmentControler.loopFour);
-                                }
-                                headerTextView.setText(Html.fromHtml(source));
+                                                      } else if (source.contains("#current_person#")) {
+                                                          source = source.replace("#current_person#", getActivity().getIntent().getStringExtra("Name"));
+                                                          headerTextView.setText(Html.fromHtml(source));
+                                                      } else if (source.contains("#n1#") || source.contains("#n2#") || source.contains("#n3#") || source.contains("#n4#")) {
+                                                          FragmentControler fragmentControler1 = (FragmentControler) getActivity();
+                                                          fragmentControler1.executeAnswers();
+                                                          if (source.contains("#n1#")) {
+                                                              if (questionsModel.getQuestionId().equals("hid_140")) {
+                                                                  int count = FragmentControler.loopOne + 1;
+                                                                  source = source.replace("#n1#", count + "");
+                                                              } else
+                                                                  source = source.replace("#n1#", FragmentControler.loopOne == 0 ? "" + 1 : "" + FragmentControler.loopOne);
 
-                            } else
-                                headerTextView.setText(Html.fromHtml(source));
-                        }
-                        if (!TextUtils.isEmpty(questionsModel.getQuestionDesc())) {
-                            questionDec.setText(questionsModel.getQuestionDesc());
-                        }
-                        showBloodPresure();
+                                                          } else if (source.contains("#n2#")) {
+                                                              if (questionsModel.getQuestionId().equals("hid_176")) {
+                                                                  int count = FragmentControler.loopTwo + 1;
+                                                                  source = source.replace("#n2#", count + "");
+                                                              } else
+                                                                  source = source.replace("#n2#", FragmentControler.loopTwo == 0 ? "" + 1 : "" + FragmentControler.loopTwo);
+                                                          } else if (source.contains("#n3#")) {
+                                                              if (questionsModel.getQuestionId().equals("hid_244")) {
+                                                                  int count = FragmentControler.loopThree + 1;
+                                                                  source = source.replace("#n3#", count + "");
+                                                              } else
+                                                                  source = source.replace("#n3#", FragmentControler.loopThree == 0 ? "" + 1 : "" + FragmentControler.loopThree);
+                                                          } else if (source.contains("#n4#")) {
+                                                              if (questionsModel.getQuestionId().equals("hid_280")) {
+                                                                  int count = FragmentControler.loopFour + 1;
+                                                                  source = source.replace("#n4#", count + "");
+                                                              } else
+                                                                  source = source.replace("#n4#", FragmentControler.loopFour == 0 ? "" + 1 : "" + FragmentControler.loopFour);
+                                                          }
+                                                          headerTextView.setText(Html.fromHtml(source));
 
-                    } catch (Exception e) {
-                        Log.d("Exception", e.getMessage());
-                        // showDialogMessage("Something went wrong need to contact developer");
-                    } finally {
-                    }
+                                                      } else
+                                                          headerTextView.setText(Html.fromHtml(source));
+                                                  }
+                                                  if (!TextUtils.isEmpty(questionsModel.getQuestionDesc())) {
+                                                      questionDec.setText(questionsModel.getQuestionDesc());
+                                                  }
+                                                  showBloodPresure();
+
+                                              } catch (Exception e) {
+                                                  Log.d("Exception", e.getMessage());
+                                                  // showDialogMessage("Something went wrong need to contact developer");
+                                              } finally {
+                                              }
 
 
-                }
-            }, 500);
+                                          }
+                                      }
+
+                    , 500);
         } else {
         }
     }
 
-    private String addAgeSex(String name) {
-
-        FragmentControler fragmentControler = (FragmentControler) getActivity();
-        List<PersonModel> personModels = fragmentControler.getPersonModels();
-        for (PersonModel personModel : personModels) {
-            if (personModel.getName().equals(name)) {
-                return personModel.getName() + " " + personModel.getId() + " " + personModel.getAge() + " " + personModel.getSex();
-            }
+    private String addAgeSex(int index, PersonModel personModel, AreaModel areaModel, String valueX) {
+        if (personModel.getName() != null) {
+            String gender = personModel.getSex().equals("1") ? "Gason" : "Fi";
+            return personModel.getName() + " " + areaModel.getSit() + areaModel.getBlock() + areaModel.getGps() + areaModel.getHH() + valueX + " " + personModel.getAge() + " " + gender;
         }
-
-        return name;
+        return null;
     }
 
 
@@ -613,6 +642,16 @@ public class DynamicFragment extends Fragment {
                                                           commonInterface.hideNext();
                                                           if (dropDownmonth == 0 || dorpDownYear == 0)
                                                               commonInterface.hideNext();
+                                                      } else if (questionsModel.getQuestionId().equals("hid_252")) {
+                                                          if ((dorpDownYear == (new DateTime().getYear() - 1) && dropDownmonth < new DateTime().getMonthOfYear()) && !singleSelecter) {
+                                                              commonInterface.hideNext();
+                                                              if (dropDownmonth == 0 || dorpDownYear == 0)
+                                                                  commonInterface.hideNext();
+                                                          } else {
+                                                              commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext(), questionsModel, "" + position, true, "", questionsModel.getAnswers().get(0).isRepeater());
+                                                              if ((dropDownmonth == 0 || dorpDownYear == 0) && !singleSelecter)
+                                                                  commonInterface.hideNext();
+                                                          }
                                                       } else {
                                                           commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext(), questionsModel, "" + position, true, "", questionsModel.getAnswers().get(0).isRepeater());
                                                           if ((dropDownmonth == 0 || dorpDownYear == 0) && !singleSelecter)
@@ -655,14 +694,14 @@ public class DynamicFragment extends Fragment {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
-                    BaseActivity baseActivity = (BaseActivity) getActivity();
-//                    baseActivity.messageToast("Pattern not match with 'Erè'");
-                    commonInterface.hideNext();
-                } else {
-                    Object status = questionsModel.getAnswers().get(position).getOptionStatus();
-                    commonInterface.getNextPosition(questionsModel.getAnswers().get(position).getOptionNext(), questionsModel, questionsModel.getAnswers().get(position).getOptionValue(), true, status, questionsModel.getAnswers().get(position).isRepeater());
-                }
+//                if (position == 0) {
+//                    BaseActivity baseActivity = (BaseActivity) getActivity();
+////                    baseActivity.messageToast("Pattern not match with 'Erè'");
+//                    commonInterface.hideNext();
+//                } else {
+                Object status = questionsModel.getAnswers().get(position).getOptionStatus();
+                commonInterface.getNextPosition(questionsModel.getAnswers().get(position).getOptionNext(), questionsModel, questionsModel.getAnswers().get(position).getOptionValue(), true, status, questionsModel.getAnswers().get(position).isRepeater());
+//                }
             }
 
             @Override
@@ -841,22 +880,46 @@ public class DynamicFragment extends Fragment {
                         if (s1 != null)
                             matchCase = s.toString().equals(s1);
                     }
-                    if (matchCase) {
-                        if (patternFlag) {
-                            if (questionsModel.getQuestionType().contains("number")) {
-                                if (UPPER_LIMIT < Integer.parseInt(s.toString()) || Integer.parseInt(s.toString()) < LOWER_LIMIT) {
-                                    commonInterface.hideNext();
-                                    BaseActivity baseActivity = (BaseActivity) getActivity();
-                                    baseActivity.messageToast("Antre yon nimewo/kantite antre " + LOWER_LIMIT + " a " + UPPER_LIMIT + ".");
+                    boolean compairWith = true;
+                    if (questionsModel.getQuestionId().equals("hid_136")) {
+                        String s1 = matchQuestion("hid_132");
+                        if (s1 != null) {
+                            try {
+                                int enteredValue = Integer.parseInt(s.toString());
+                                int prevValue = Integer.parseInt(s1);
+                                if (enteredValue >= prevValue) {
+                                    compairWith = true;
+                                } else {
+                                    compairWith = false;
+                                }
+                            } catch (Exception e) {
+                                compairWith = true;
+                            }
+                        }
+                    }
+
+                    if (compairWith) {
+                        if (matchCase) {
+                            if (patternFlag) {
+                                if (questionsModel.getQuestionType().contains("number")) {
+                                    if (UPPER_LIMIT < Integer.parseInt(s.toString()) || Integer.parseInt(s.toString()) < LOWER_LIMIT) {
+                                        commonInterface.hideNext();
+                                        BaseActivity baseActivity = (BaseActivity) getActivity();
+                                        baseActivity.messageToast("Antre yon nimewo/kantite antre " + LOWER_LIMIT + " a " + UPPER_LIMIT + ".");
+                                    } else {
+                                        Object status = questionsModel.getAnswers().get(0).getOptionStatus();
+                                        commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext(), questionsModel, s.toString(), true, status, questionsModel.getAnswers().get(0).isRepeater());
+                                    }
                                 } else {
                                     Object status = questionsModel.getAnswers().get(0).getOptionStatus();
                                     commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext(), questionsModel, s.toString(), true, status, questionsModel.getAnswers().get(0).isRepeater());
+                                    commonInterface.questionId(String.valueOf(questionsModel.getAnswers().get(0).getOptionNext()), questionsModel, s.toString());
+// view.setTag(new Temp(questionsModel.getAnswers().get(0).getOptionNext()  , questionsModel, s.toString(), true));
                                 }
                             } else {
-                                Object status = questionsModel.getAnswers().get(0).getOptionStatus();
-                                commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext(), questionsModel, s.toString(), true, status, questionsModel.getAnswers().get(0).isRepeater());
-                                commonInterface.questionId(String.valueOf(questionsModel.getAnswers().get(0).getOptionNext()), questionsModel, s.toString());
-// view.setTag(new Temp(questionsModel.getAnswers().get(0).getOptionNext()  , questionsModel, s.toString(), true));
+                                commonInterface.hideNext();
+                                BaseActivity baseActivity = (BaseActivity) getActivity();
+                                baseActivity.messageToast("Erè");
                             }
                         } else {
                             commonInterface.hideNext();
@@ -996,7 +1059,7 @@ public class DynamicFragment extends Fragment {
                         commonInterface.hideNext();
                         BaseActivity baseActivity = (BaseActivity) getActivity();
                         String value = questionsModel.getQuestionId().equals("hid_272") ? FragmentControler.loopThree + "" : FragmentControler.loopFour + "";
-                        baseActivity.messageToast("Patisipan yo te di ke  " + s.toString() + " mouri, men yo te bay enfomasyon yo pou  " + value + " times B2a1 was answered] moun ki mouri: retounen epi korige erè.");
+                        baseActivity.messageToast("Patisipan yo te di ke  " + s.toString() + " mouri, men yo te bay enfomasyon yo pou  " + value + "  moun ki mouri: retounen epi korige erè.");
                     }
                 } else
                     commonInterface.hideNext();
@@ -1116,8 +1179,13 @@ public class DynamicFragment extends Fragment {
                     String value = fetchMapValue(answer.getAnswer());
                     questionText = questionText.replace("[B11]", value);
                 } else if (answer.getQuestionId().equals("iid_536")) {
-                    String value = fetchMapValue(answer.getAnswer());
-                    questionText = questionText.replace("[B12]", value);
+                    try {
+                        Double aDouble = Double.parseDouble(answer.getAnswer()) * 0.453592d;
+                        String value = fetchMapValue("" + aDouble);
+                        questionText = questionText.replace("[B12]", value);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 } else if (answer.getQuestionId().equals("iid_540")) {
                     String value = fetchMapValue(answer.getAnswer());
                     questionText = questionText.replace("[B13]", value);
@@ -1334,14 +1402,12 @@ public class DynamicFragment extends Fragment {
 
     void showPerson(String type) {
         FragmentControler.childCount = 0;
-        editTextInflatedView = (LinearLayout) getLayoutInflater(getArguments()).inflate(R.layout.show_person, null);
+        LinearLayout editTextInflatedView = (LinearLayout) getLayoutInflater(getArguments()).inflate(R.layout.show_person, null);
         LinearLayout namelayout = (LinearLayout) editTextInflatedView.findViewById(R.id.namelayout);
         LinearLayout sexLayout = (LinearLayout) editTextInflatedView.findViewById(R.id.sexlayout);
         LinearLayout ageLayout = (LinearLayout) editTextInflatedView.findViewById(R.id.agelayout);
         FragmentControler fragmentControler = (FragmentControler) getActivity();
         List<PersonModel> personModels = fragmentControler.getPersonModels();
-
-
         switch (type) {
             case "hh_person":
 
@@ -1359,33 +1425,61 @@ public class DynamicFragment extends Fragment {
                     name.setText(personModel.getName());
                     namelayout.addView(name);
                     name.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
-                }
-                TextView sex = new TextView(getContext());
-                sex.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+                    TextView sex = new TextView(getContext());
+                    sex.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
 
-                TextView age = new TextView(getContext());
-                age.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+                    TextView age = new TextView(getContext());
+                    age.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
 
-                age.setId(new Random().nextInt(43));
-                age.setTextColor(Color.BLACK);
-                if (type.equals("hh_children")) {
-                    try {
-                        if (Integer.parseInt(personModel.getAge()) <= 5) {
-                            FragmentControler.childCount++;
+                    age.setId(new Random().nextInt(43));
+                    age.setTextColor(Color.BLACK);
+                    if (type.equals("hh_children")) {
+                        try {
+                            if (Integer.parseInt(personModel.getAge()) <= 5) {
+                                FragmentControler.childCount++;
+                            }
+
+                        } catch (Exception e) {
+
                         }
-
-                    } catch (Exception e) {
-
                     }
+
+                    sex.setId(new Random().nextInt(54));
+                    sex.setTextColor(Color.BLACK);
+
+                    sex.setText(personModel.getSex().equals("1") ? "Gason" : "Fi");
+                    age.setText(personModel.getAge());
+                    sexLayout.addView(sex);
+                    ageLayout.addView(age);
+
+                } else {
+                    TextView sex = new TextView(getContext());
+                    sex.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+
+                    TextView age = new TextView(getContext());
+                    age.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+
+                    age.setId(new Random().nextInt(43));
+                    age.setTextColor(Color.BLACK);
+                    if (type.equals("hh_children")) {
+                        try {
+                            if (Integer.parseInt(personModel.getAge()) <= 5) {
+                                FragmentControler.childCount++;
+                            }
+
+                        } catch (Exception e) {
+
+                        }
+                    }
+
+                    sex.setId(new Random().nextInt(54));
+                    sex.setTextColor(Color.BLACK);
+
+                    sex.setText(personModel.getSex().equals("1") ? "Gason" : "Fi");
+                    age.setText(personModel.getAge());
+                    sexLayout.addView(sex);
+                    ageLayout.addView(age);
                 }
-
-                sex.setId(new Random().nextInt(54));
-                sex.setTextColor(Color.BLACK);
-
-                sex.setText(personModel.getSex().equals("1") ? "Gason" : "Fi");
-                age.setText(personModel.getAge());
-                sexLayout.addView(sex);
-                ageLayout.addView(age);
             }
         }
         answerContainer.addView(editTextInflatedView);

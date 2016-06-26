@@ -10,7 +10,7 @@ import android.widget.Toast;
 
 import com.oxo.haiti.R;
 import com.oxo.haiti.model.AreaModel;
-import com.oxo.haiti.model.RtfModel;
+import com.oxo.haiti.model.PersonModel;
 import com.oxo.haiti.storage.ContentStorage;
 import com.oxo.haiti.storage.SnappyNoSQL;
 
@@ -99,8 +99,8 @@ public abstract class BaseActivity extends AppCompatActivity implements DialogIn
 
 
             AreaModel areaModel = SnappyNoSQL.getInstance().getArea(key);
-            List<RtfModel> rtfModels = new ArrayList<>(areaModel.getMemberRtfModels());
-            for (RtfModel rtfModel : rtfModels) {
+            List<PersonModel> rtfModels = new ArrayList<>(areaModel.getMemberRtfModels());
+            for (PersonModel rtfModel : rtfModels) {
                 if (rtfModel.getName().equals(Name)) {
                     areaModel.getMemberRtfModels().remove(rtfModel);
                 }
@@ -109,11 +109,7 @@ public abstract class BaseActivity extends AppCompatActivity implements DialogIn
                 clearSaveState(key, true);
             }
             SnappyNoSQL.getInstance().saveArea(areaModel, key);
-        } catch (
-                Exception e
-                )
-
-        {
+        } catch (Exception e) {
 
         }
 
