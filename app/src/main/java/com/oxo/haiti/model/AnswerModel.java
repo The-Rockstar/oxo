@@ -109,6 +109,19 @@ public class AnswerModel implements Serializable {
         @Expose
         private String answer;
 
+
+        @SerializedName("extra")
+        @Expose
+        private List<String> extra= new ArrayList<>();
+
+        public List<String> getExtra() {
+            return extra;
+        }
+
+        public void setExtra(String extra) {
+            this.extra.add(extra);
+        }
+
         @SerializedName("next_id")
         @Expose
         private int next_id = 0;
@@ -129,6 +142,39 @@ public class AnswerModel implements Serializable {
         @SerializedName("loadedSex")
         @Expose
         private boolean isLoadedSex = false;
+
+
+        @SerializedName("loopCount")
+        @Expose
+        private int loopCount = 0;
+
+        @SerializedName("loopNumber")
+        @Expose
+        private int loopNumber = 0;
+
+        public int getNext_id() {
+            return next_id;
+        }
+
+        public void setNext_id(int next_id) {
+            this.next_id = next_id;
+        }
+
+        public int getLoopCount() {
+            return loopCount;
+        }
+
+        public void setLoopCount(int loopCount) {
+            this.loopCount = loopCount;
+        }
+
+        public int getLoopNumber() {
+            return loopNumber;
+        }
+
+        public void setLoopNumber(int loopNumber) {
+            this.loopNumber = loopNumber;
+        }
 
         public boolean isLoadedAge() {
             return isLoadedAge;

@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Stack;
 
@@ -43,7 +45,7 @@ import retrofit2.Response;
 
 public class FragmentControler extends BaseActivity implements View.OnClickListener, CommonInterface {
 
-    public static int childCount = 0;
+    //    public static int childCount = 0;
     public static boolean MainYear = false;
     private ViewPager viewPager;
     private QuestionAdapter questionAdapter;
@@ -58,11 +60,13 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     private boolean isRepeater = false;
     private int repeaterOption;
     private AreaModel areaModel = new AreaModel();
-    public static int loopOne = 1, loopTwo = 1, loopThree = 1, loopFour = 1;
+    public static int loopOne = 1, loopTwo = 1, loopThree = 1, loopFour = 1, loopFive = 1;
     List<PersonModel> personModels = new ArrayList<>();
     public static boolean isLoaded = false;
     public static boolean resumeFlag = false;
     public List<PersonModel> OneCilds = new ArrayList<>();
+    public static final String child = "hh_children";
+    public static final String persons = "hh_person";
 
 
     @Override
@@ -72,41 +76,52 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        loopOne = 1;
+        loopTwo = 1;
+        loopThree = 1;
+        loopFour = 1;
+        isLoaded = false;
+        resumeFlag = false;
+        MainYear = false;
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fragment_controler);
         key = getIntent().getStringExtra("key");
         areaModel.set_id(key);
+        try {
+            if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
+                questionsModelList = SnappyNoSQL.getInstance().getSurveyQuestionsOne();
+                resumeSurvey("1", key);
+                setUpAdapter();
+                viewPager.setCurrentItem(ContentStorage.getInstance(this).getPositionSurveyOne(key));
+            } else if (getIntent().getExtras().getString("SURVEY").equals("FOUR")) {
+                findViewById(R.id.stop_survey).setVisibility(View.INVISIBLE);
+                findViewById(R.id.prev).setVisibility(View.GONE);
+                questionsModelList = SnappyNoSQL.getInstance().getSurveyQuestionsFour();
+                resumeSurvey("3", key);
+                setUpAdapter();
+            } else {
+                questionsModelList = SnappyNoSQL.getInstance().getSurveyQuestionsTwo();
+                resumeSurvey("2", key);
+                setUpAdapter();
+                viewPager.setCurrentItem(ContentStorage.getInstance(this).getPositionSurveyOne(key));
+            }
 
-        if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
-            questionsModelList = SnappyNoSQL.getInstance().getSurveyQuestionsOne();
-            resumeSurvey("1", key);
-            setUpAdapter();
-            viewPager.setCurrentItem(ContentStorage.getInstance(this).getPositionSurveyOne(key));
-        } else if (getIntent().getExtras().getString("SURVEY").equals("FOUR")) {
-            findViewById(R.id.stop_survey).setVisibility(View.INVISIBLE);
-            findViewById(R.id.prev).setVisibility(View.GONE);
-            questionsModelList = SnappyNoSQL.getInstance().getSurveyQuestionsFour();
-            resumeSurvey("3", key);
-            setUpAdapter();
-        } else {
-            questionsModelList = SnappyNoSQL.getInstance().getSurveyQuestionsTwo();
-            resumeSurvey("2", key);
-            setUpAdapter();
-            viewPager.setCurrentItem(ContentStorage.getInstance(this).getPositionSurveyOne(key));
+            findViewById(R.id.prev).setOnClickListener(this);
+            findViewById(R.id.next).setOnClickListener(this);
+            findViewById(R.id.stop_survey).setOnClickListener(this);
+            setUpToolbar();
+        } catch (Exception e) {
+
         }
-
-        findViewById(R.id.prev).setOnClickListener(this);
-        findViewById(R.id.next).setOnClickListener(this);
-        findViewById(R.id.stop_survey).setOnClickListener(this);
-        setUpToolbar();
-        //viewPager.setCurrentItem(executeQuestionId(252));
+//        viewPager.setCurrentItem(executeQuestionId(124));
     }
 
     public List<QuestionsModel> getQuestionsModelList() {
         return questionsModelList;
     }
 
-    private void resumeSurvey(String surveyID, String isOne) {
+    private void resumeSurvey(String surveyID, String isOne) throws Exception {
         if (getIntent().getExtras().getBoolean("RESUME")) {
             answerModel = SnappyNoSQL.getInstance().getSaveState(isOne);
             prevSteps = SnappyNoSQL.getInstance().getStack(isOne);
@@ -114,9 +129,19 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 newObject(surveyID);
             else
                 findViewById(R.id.prev).setVisibility(View.VISIBLE);
+
+            if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
+                areaModel = SnappyNoSQL.getInstance().getArea(key);
+                if (areaModel.getMemberRtfModels().size() > 0) {
+                    personModels = areaModel.getMemberRtfModels();
+                }
+                areaModel.set_id(key);
+            }
+
         } else {
             newObject(surveyID);
         }
+
     }
 
 
@@ -135,9 +160,9 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         answerModel.setSurveryId(surveyID);
         String s = new String(key);
         if (key.contains("ONE") || key.contains("TWO") || key.contains("THREE")) {
-            s.replace("ONE", " ");
-            s.replace("TWO", " ");
-            s.replace("FOUR", " ");
+            s = s.replace("ONE", "");
+            s = s.replace("TWO", "");
+            s = s.replace("FOUR", "");
 
         }
         answerModel.setGenerated_survey(s);
@@ -154,8 +179,21 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             ContentStorage.getInstance(this).savePositionSurveyOne(viewPager.getCurrentItem(), key);
             SnappyNoSQL.getInstance().saveState(answerModel, key);
             SnappyNoSQL.getInstance().saveStack(prevSteps, key);
-
         }
+
+
+        try {
+
+            if (status != null) {
+                answerModel.setStatus(status);
+            }
+            answerModel.setGenerated_survey(key);
+            final String data = new Gson().toJson(answerModel);
+            SnappyNoSQL.getInstance().saveOfflineSurvey(data);
+        } catch (Exception e) {
+            Log.d("Stop", "Inter mediator");
+        }
+
     }
 
 
@@ -206,78 +244,261 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        View view = this.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
-        switch (v.getId()) {
-            case R.id.stop_survey:
-                warning();
-                break;
-            case R.id.next:
-                resumeFlag = false;
-                System.out.println("next_position" + nextPosition);
-                if (questionAdapter.getCount() != nextPosition && nextPosition != 0) {
-                    findViewById(R.id.next).setVisibility(View.INVISIBLE);
-                    findViewById(R.id.prev).setVisibility(View.VISIBLE);
-                    Stack<AnswerModel.SuveryAnswer> answers = answerModel.getSuveryAnswers();
-                    answers.add(suveryAnswer);
+        try {
+            View view = this.getCurrentFocus();
+            if (view != null) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+            switch (v.getId()) {
+                case R.id.stop_survey:
+                    warning();
+                    break;
+                case R.id.next:
+                    if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
+                        if (order == 188 || order == 192 || order == 160 || order == 164) {
+                            resumeFlag = false;
+                        }
+                    } else
+                        resumeFlag = true;
+
+                    System.out.println("next_position" + nextPosition + " loop :" + loopOne);
+
+                    if (questionAdapter.getCount() != nextPosition && nextPosition != 0) {
+                        findViewById(R.id.next).setVisibility(View.INVISIBLE);
+                        findViewById(R.id.prev).setVisibility(View.VISIBLE);
+                        Stack<AnswerModel.SuveryAnswer> answers = answerModel.getSuveryAnswers();
+                        if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
+                            if (order < 137 || (order > 204 && order < 241) || order > 328) {
+                                boolean updateItem = false;
+                                for (AnswerModel.SuveryAnswer temp : answers) {
+                                    if (temp.getQuestionId().equals(suveryAnswer.getQuestionId())) {
+                                        updateItem = true;
+                                        answers.remove(temp);
+                                        answers.push(suveryAnswer);
+                                        break;
+                                    }
+                                }
+                                if (!updateItem)
+                                    answers.add(suveryAnswer);
+
+                            } else if (order >= 140 && order <= 164) {
+                                skyForce(nextPosition + "One" + loopOne);
+                                suveryAnswer.setExtra(nextPosition + "One" + loopOne);
+                                boolean updateItem = false;
+                                for (AnswerModel.SuveryAnswer temp : answers) {
+                                    if (temp.getQuestionId().equals(suveryAnswer.getQuestionId()) && temp.getLoopCount() == loopOne) {
+                                        updateItem = true;
+                                        answers.remove(temp);
+                                        suveryAnswer.setLoopCount(loopOne);
+                                        suveryAnswer.setLoopNumber(1);
+                                        answers.push(suveryAnswer);
+                                        Log.d("LOOPSTORE", "UPDATE IN LOOP :" + loopOne);
+                                        break;
+                                    }
+                                }
+                                if (!updateItem) {
+                                    Log.d("LOOPSTORE", "Add IN LOOP :" + loopOne);
+                                    suveryAnswer.setLoopCount(loopOne);
+                                    suveryAnswer.setLoopNumber(1);
+                                    answers.add(suveryAnswer);
+                                }
+                            } else if (order >= 176 && order <= 192) {
+                                skyForce(nextPosition + "Two" + loopTwo);
+                                suveryAnswer.setExtra(nextPosition + "Two" + loopTwo);
+
+                                boolean updateItem = false;
+                                for (AnswerModel.SuveryAnswer temp : answers) {
+                                    if (temp.getQuestionId().equals(suveryAnswer.getQuestionId()) && temp.getLoopCount() == loopTwo) {
+                                        updateItem = true;
+                                        answers.remove(temp);
+                                        suveryAnswer.setLoopCount(loopTwo);
+                                        suveryAnswer.setLoopNumber(2);
+                                        answers.push(suveryAnswer);
+                                        break;
+                                    }
+                                }
+                                if (!updateItem) {
+                                    suveryAnswer.setLoopCount(loopTwo);
+                                    suveryAnswer.setLoopNumber(2);
+                                    answers.add(suveryAnswer);
+                                }
+                            } else if (order >= 244 && order <= 268) {
+                                skyForce(nextPosition + "Three" + loopThree);
+                                suveryAnswer.setExtra(nextPosition + "Three" + loopThree);
+
+                                boolean updateItem = false;
+                                for (AnswerModel.SuveryAnswer temp : answers) {
+                                    if (temp.getQuestionId().equals(suveryAnswer.getQuestionId()) && temp.getLoopCount() == loopThree) {
+                                        updateItem = true;
+                                        answers.remove(temp);
+                                        suveryAnswer.setLoopCount(loopThree);
+                                        suveryAnswer.setLoopNumber(3);
+                                        answers.push(suveryAnswer);
+                                        break;
+                                    }
+                                }
+                                if (!updateItem) {
+                                    suveryAnswer.setLoopCount(loopThree);
+                                    suveryAnswer.setLoopNumber(3);
+                                    answers.add(suveryAnswer);
+                                }
+                            } else if (order >= 280 && order <= 300) {
+                                skyForce(nextPosition + "Four" + loopFour);
+                                suveryAnswer.setExtra(nextPosition + "Four" + loopFour);
+
+                                boolean updateItem = false;
+                                for (AnswerModel.SuveryAnswer temp : answers) {
+                                    if (temp.getQuestionId().equals(suveryAnswer.getQuestionId()) && temp.getLoopCount() == loopFour) {
+                                        updateItem = true;
+                                        answers.remove(temp);
+                                        suveryAnswer.setLoopCount(loopFour);
+                                        suveryAnswer.setLoopNumber(4);
+                                        answers.push(suveryAnswer);
+                                        break;
+                                    }
+                                }
+                                if (!updateItem) {
+                                    suveryAnswer.setLoopCount(loopFour);
+                                    suveryAnswer.setLoopNumber(4);
+                                    answers.add(suveryAnswer);
+                                }
+                            } else if (order >= 305 && order <= 336) {
+                                executeAnswers();
+                                skyForce(nextPosition + "FIVE" + loopFive);
+                                suveryAnswer.setExtra(nextPosition + "FIVE" + loopFive);
+
+                                boolean updateItem = false;
+                                for (AnswerModel.SuveryAnswer temp : answers) {
+                                    if (temp.getQuestionId().equals(suveryAnswer.getQuestionId()) && temp.getLoopCount() == loopFive) {
+                                        updateItem = true;
+                                        answers.remove(temp);
+                                        suveryAnswer.setLoopCount(loopFive);
+                                        suveryAnswer.setLoopNumber(5);
+                                        answers.push(suveryAnswer);
+                                        break;
+                                    }
+                                }
+                                if (!updateItem) {
+                                    suveryAnswer.setLoopCount(loopFive);
+                                    suveryAnswer.setLoopNumber(5);
+                                    answers.add(suveryAnswer);
+                                }
+                            } else
+                                answers.add(suveryAnswer);
+                        } else
+                            answers.add(suveryAnswer);
+
 //                    if (!prevSteps.contains(nextPosition)) {
-                    prevSteps.push(nextPosition);
+                        prevSteps.push(nextPosition);
 //                    }
-                    viewPager.setCurrentItem(nextPosition);
-                } else {
-                    Stack<AnswerModel.SuveryAnswer> answers = answerModel.getSuveryAnswers();
-                    answers.add(suveryAnswer);
+                        viewPager.setCurrentItem(nextPosition);
+                    } else {
+                        Stack<AnswerModel.SuveryAnswer> answers = answerModel.getSuveryAnswers();
+                        answers.add(suveryAnswer);
 //                    if (!prevSteps.contains(nextPosition)) {
-                    prevSteps.push(nextPosition);
+                        prevSteps.push(nextPosition);
 //                    }
-                    viewPager.setCurrentItem(nextPosition);
-                    backgroundStart();
-                }
-                break;
-            case R.id.prev:
-                resumeFlag = true;
-                if (!prevSteps.empty()) {
-                    if (nextPosition == prevSteps.peek()) {
-                        prevSteps.pop();
+                        backgroundStart();
+                        if (nextPosition == 0) {
+                        } else
+                            viewPager.setCurrentItem(nextPosition);
                     }
-                    viewPager.setCurrentItem(prevSteps.pop());
-                } else {
-                    viewPager.setCurrentItem(0);
-                    findViewById(R.id.prev).setVisibility(View.INVISIBLE);
-                }
-                break;
-            case R.id.finish_this:
-                if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
-                    executeAnswers();
-                    SnappyNoSQL.getInstance().saveArea(areaModel, key);
-                    Intent intent = new Intent(this, ResumeActivity.class);
-                    intent.putExtras(getIntent());
-                    startActivity(intent);
-                }
-                finish();
-                break;
-            case R.id.settings:
-                optionMenu();
-                break;
+                    break;
+                case R.id.prev:
+                    resumeFlag = true;
+                    if (!prevSteps.empty()) {
+                        if (nextPosition == prevSteps.peek()) {
+                        //    prevSteps.pop();
+                        }
+                        viewPager.setCurrentItem(prevSteps.pop());
+                    } else {
+                        viewPager.setCurrentItem(0);
+                        findViewById(R.id.prev).setVisibility(View.INVISIBLE);
+                    }
+                    break;
+                case R.id.finish_this:
+                    if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
+                        executeAnswers();
+                        SnappyNoSQL.getInstance().saveArea(areaModel, key);
+                        Intent intent = new Intent(this, ResumeActivity.class);
+                        intent.putExtras(getIntent());
+                        startActivity(intent);
+                    }
+                    finish();
+                    break;
+                case R.id.settings:
+                    optionMenu();
+                    break;
+            }
+        } catch (Exception e) {
+
         }
     }
 
+    private void skyForce(String id) {
+        try {
+            Bundle bundle = getIntent().getExtras();
+            if (bundle.containsKey(id)) {
+                int lastPosition = bundle.getInt(id);
+                if (lastPosition == nextPosition)
+                    resumeFlag = true;
+                else
+                    resumeFlag = false;
+            } else
+                resumeFlag = false;
+        } catch (Exception e) {
+            resumeFlag = false;
+        } finally {
+            Intent intent = getIntent();
+            intent.putExtra(id, nextPosition);
+            setIntent(intent);
+        }
 
-    public List<PersonModel> getPersonModels() {
+    }
+
+
+    public List<PersonModel> getPersonModels() throws Exception {
         return personModels;
     }
 
+    int personcount = 0;
+    int childcount = 0;
+
+    public Map<String, List<PersonModel>> getPersionsList() {
+        personcount = 0;
+        childcount = 0;
+        Map<String, List<PersonModel>> stringPersonModelMap = new HashMap<>();
+        List<PersonModel> mansList = new ArrayList<>();
+        List<PersonModel> childsList = new ArrayList<>();
+        for (PersonModel personModel : personModels) {
+            if (personModel.getTypo().equals(persons)) {
+                personcount++;
+                personModel.setLoopCount(personcount);
+                mansList.add(personModel);
+            } else {
+                childcount++;
+                personModel.setLoopCount(childcount);
+                childsList.add(personModel);
+            }
+        }
+        stringPersonModelMap.put(persons, mansList);
+        stringPersonModelMap.put(child, childsList);
+        return stringPersonModelMap;
+    }
+
+
     public void executeAnswers() {
 //        personModels.clear();
-        loopOne = 0;
-        loopTwo = 0;
+//        loopOne = 0
+//        loopTwo = 0;
         loopThree = 0;
         loopFour = 0;
+        loopFive = 0;
         PersonModel personModel = null;
-        for (AnswerModel.SuveryAnswer answer : answerModel.getSuveryAnswers()) {
+        List<AnswerModel.SuveryAnswer> suveryAnswer = answerModel.getSuveryAnswers();
+        Collections.reverse(suveryAnswer);
+        for (AnswerModel.SuveryAnswer answer : suveryAnswer) {
             if (answer.getQuestionId().equals("hid_148") && !TextUtils.isEmpty(answer.getAnswer())) {
                 if (!answer.isLoadedName()) {
                     answer.setLoadedName(true);
@@ -286,7 +507,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     personModel.setTypo("hh_person");
                     personModel.setAge(answer.getAnswer());
                     loopSexy:
-                    for (AnswerModel.SuveryAnswer innerAnswer : answerModel.getSuveryAnswers()) {
+                    for (AnswerModel.SuveryAnswer innerAnswer : suveryAnswer) {
                         if (innerAnswer.getQuestionId().equals("hid_144") && !TextUtils.isEmpty(answer.getAnswer())) {
                             if (!innerAnswer.isLoadedSex()) {
                                 innerAnswer.setLoadedSex(true);
@@ -296,7 +517,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         }
                     }
                     loopName:
-                    for (AnswerModel.SuveryAnswer innerAnswer : answerModel.getSuveryAnswers()) {
+                    for (AnswerModel.SuveryAnswer innerAnswer : suveryAnswer) {
                         if (innerAnswer.getQuestionId().equals("hid_140") && !TextUtils.isEmpty(answer.getAnswer())) {
                             if (!innerAnswer.isLoadedName()) {
                                 innerAnswer.setLoadedName(true);
@@ -306,6 +527,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         }
                         if (!personModels.contains(personModel)) {
                             personModels.add(personModel);
+                            //loopOne++;
                             areaModel.setMemberRtfModels(personModels);
                         }
                     }
@@ -320,7 +542,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     personModel.setId("" + new Random().nextInt(99));
                     personModel.setAge(answer.getAnswer());
                     innerLoop:
-                    for (AnswerModel.SuveryAnswer innerAnswer : answerModel.getSuveryAnswers()) {
+                    for (AnswerModel.SuveryAnswer innerAnswer : suveryAnswer) {
                         if (innerAnswer.getQuestionId().equals("hid_176") && !TextUtils.isEmpty(answer.getAnswer())) {
                             if (!innerAnswer.isLoadedSex()) {
                                 innerAnswer.setLoadedSex(true);
@@ -337,7 +559,6 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             }
 
             if (answer.getQuestionId().equals("hid_140") && !TextUtils.isEmpty(answer.getAnswer())) {
-                loopOne++;
             } else if (answer.getQuestionId().equals("hid_2") || answer.getQuestionId().equals("hid_3") || answer.getQuestionId().equals("hid_4") || answer.getQuestionId().equals("hid_5") && !TextUtils.isEmpty(answer.getAnswer())) {
                 areaModel.setBlock(answer.getAnswer());
             } else if (answer.getQuestionId().equals("hid_1") && !TextUtils.isEmpty(answer.getAnswer())) {
@@ -355,23 +576,34 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             } else if (answer.getQuestionId().equals("hid_15") && !TextUtils.isEmpty(answer.getAnswer())) {
                 areaModel.setDesc(answer.getAnswer());
             } else if (answer.getQuestionId().equals("hid_176") && !TextUtils.isEmpty(answer.getAnswer())) {
-                loopTwo++;
+                //loopTwo++;
             } else if (answer.getQuestionId().equals("hid_244") && !TextUtils.isEmpty(answer.getAnswer())) {
                 loopThree++;
             } else if (answer.getQuestionId().equals("hid_280") && !TextUtils.isEmpty(answer.getAnswer())) {
                 loopFour++;
+            } else if (answer.getQuestionId().equals("hid_328") && !TextUtils.isEmpty(answer.getAnswer())) {
+                loopFive++;
             }
         }
 
     }
 
 
-    void backgroundStart() {
+    void backgroundStart() throws Exception {
         new AsyncTask() {
             @Override
             protected Object doInBackground(Object[] params) {
-                SyncData();
-                clearSaveState(key, getIntent().getExtras().getString("SURVEY").equals("ONE"));
+                try {
+                    SyncData();
+                    if (status != null) {
+                        if (status.equalsIgnoreCase("fini"))
+                            clearSaveState(key, getIntent().getExtras().getString("SURVEY").equals("ONE"));
+                        else
+                            pauseSurvey();
+                    }
+                } catch (Exception e) {
+
+                }
                 return null;
             }
 
@@ -391,13 +623,20 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                         if (getIntent().getExtras().getString("SURVEY").equals("ONE") || getIntent().getExtras().getString("SURVEY").equals("FOUR")) {
                             executeAnswers();
                             SnappyNoSQL.getInstance().saveArea(areaModel, key);
-                            clearSaveState(key, getIntent().getExtras().getString("SURVEY").equals("ONE"));
+                            if (status.equalsIgnoreCase("fini"))
+                                clearSaveState(key, getIntent().getExtras().getString("SURVEY").equals("ONE"));
+                            else
+                                pauseSurvey();
+
 //                            Intent intent = new Intent(FragmentControler.this, SurveyTwo.class);
                             //                          intent.putExtras(getIntent());
                             //                        startActivity(intent);
                             finish();
                         } else {
-                            removePerson(key, getIntent().getStringExtra("Name"));
+                            if (status.equalsIgnoreCase("fini"))
+                                removePerson(key, getIntent().getStringExtra("Name"));
+                            else
+                                pauseSurvey();
                             findViewById(R.id.main_layout).setVisibility(View.GONE);
                             findViewById(R.id.finish_this).setVisibility(View.VISIBLE);
                             findViewById(R.id.finish_this).setOnClickListener(FragmentControler.this);
@@ -410,9 +649,11 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     }
 
 
-    private void SyncData() {
-        if (status != null)
+    private void SyncData() throws Exception {
+        if (status != null) {
             answerModel.setStatus(status);
+        }
+
 
         answerModel.setGenerated_survey(key);
         final String data = new Gson().toJson(answerModel);
@@ -475,86 +716,111 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     }
 
     boolean executed = false;
+    int order = 0;
 
     @Override
     public void getNextPosition(int position, QuestionsModel questionsModel, String answer, boolean isNew, Object object, boolean localIsRepeater) {
-        Log.d("question Id ==", questionsModel.getQuestionId());
-        int next = executeQuestionId(position);
+        try {
+            order = position;
+            Log.d("question Id ==", questionsModel.getQuestionId());
+            int next = executeQuestionId(position);
 
-        if (questionsModel.getQuestionId().equals("hid_276")) {
-            if (answer.equals("1")) {
-                nextPosition = executeQuestionId(277);
-                for (QuestionsModel.Answer x : questionsModel.getAnswers())
-                    x.setOptionNext(277);
 
-            } else {
-                if (FragmentControler.childCount == 0) {
-                    nextPosition = executeQuestionId(365);
+            if (questionsModel.getQuestionId().equals("hid_160") || questionsModel.getQuestionId().equals("hid_164")) {
+                if (answer.equals("1")) {
+                    loopOne = getPersionsList().get(FragmentControler.persons).size() + 1;
+                }
+            }
+            if (questionsModel.getQuestionId().equals("hid_188") || questionsModel.getQuestionId().equals("hid_192")) {
+                if (answer.equals("1")) {
+                    loopTwo = getPersionsList().get(FragmentControler.child).size() + 1;
+                }
+            }
+            int childSize = 0;
+
+            List<PersonModel> personModels = getPersionsList().get(child);
+            for (PersonModel personModel : personModels) {
+                if (Integer.parseInt(personModel.getAge()) <= 5) {
+                    childSize++;
+                }
+            }
+
+            if (questionsModel.getQuestionId().equals("hid_276")) {
+                if (answer.equals("1")) {
+                    nextPosition = executeQuestionId(277);
                     for (QuestionsModel.Answer x : questionsModel.getAnswers())
-                        x.setOptionNext(365);
-                } else if (FragmentControler.childCount == 1) {
-                    nextPosition = executeQuestionId(305);
-                    for (QuestionsModel.Answer x : questionsModel.getAnswers())
-                        x.setOptionNext(305);
-                } else if (FragmentControler.childCount >= 2) {
-                    nextPosition = executeQuestionId(305);
-                    for (QuestionsModel.Answer x : questionsModel.getAnswers()) {
-                        x.setOptionNext(305);
-                    }
+                        x.setOptionNext(277);
+
                 } else {
+                    if (childSize == 0) {
+                        nextPosition = executeQuestionId(365);
+                        for (QuestionsModel.Answer x : questionsModel.getAnswers())
+                            x.setOptionNext(365);
+                    } else if (childSize == 1) {
+                        nextPosition = executeQuestionId(305);
+                        for (QuestionsModel.Answer x : questionsModel.getAnswers())
+                            x.setOptionNext(305);
+                    } else if (childSize >= 2) {
+                        nextPosition = executeQuestionId(305);
+                        for (QuestionsModel.Answer x : questionsModel.getAnswers()) {
+                            x.setOptionNext(305);
+                        }
+                    } else {
 
+                    }
                 }
             }
-        }
 
-        if (!executed) {
-            if (FragmentControler.childCount >= 2) {
-                executed = true;
-                if (questionsModel.getQuestionId().equals("hid_328")) {
-                    nextPosition = executeQuestionId(308);
-                    showDialogMessage("Testing");
-                    for (QuestionsModel.Answer x : questionsModel.getAnswers())
-                        x.setOptionNext(308);
+//            if (!executed) {
+//                if (childSize >= 2) {
+//                    executed = true;
+//                    if (questionsModel.getQuestionId().equals("hid_328")) {
+//                        nextPosition = executeQuestionId(308);
+//                        showDialogMessage("Testing");
+//                        for (QuestionsModel.Answer x : questionsModel.getAnswers())
+//                            x.setOptionNext(308);
+//
+//                    }
+//                } else if (executed) {
+//                    if (questionsModel.getQuestionId().equals("hid_328")) {
+//                        nextPosition = executeQuestionId(332);
+//                        for (QuestionsModel.Answer x : questionsModel.getAnswers())
+//                            x.setOptionNext(332);
+//
+//                    }
+//                }
+//            }
 
-                }
-            } else if (executed) {
-                if (questionsModel.getQuestionId().equals("hid_328")) {
-                    nextPosition = executeQuestionId(332);
-                    for (QuestionsModel.Answer x : questionsModel.getAnswers())
-                        x.setOptionNext(332);
+            fetchViewData(nextPosition, answer, questionsModel);
 
-                }
+            if (localIsRepeater) {
+                isRepeater = localIsRepeater;
             }
-        }
 
-        fetchViewData(nextPosition, answer, questionsModel);
-
-        if (localIsRepeater) {
-            isRepeater = localIsRepeater;
-        }
-
-        findViewById(R.id.next).setVisibility(View.VISIBLE);
+            findViewById(R.id.next).setVisibility(View.VISIBLE);
 //        if (isNew) {
-        suveryAnswer = new AnswerModel.SuveryAnswer();
-        suveryAnswer.setAnswer(answer);
-        suveryAnswer.setNextId(position);
-        suveryAnswer.setQuestionId(questionsModel.getQuestionId());
-        Log.d("Q_ID", questionsModel.getQuestionId());
-        suveryAnswer.setQuestionKey(questionsModel.getQuestionKey());
-        if (isRepeater || localIsRepeater && (repeaterOption == 0) || localIsRepeater) {
-            repeaterOption = position;
-            isRepeater = localIsRepeater;
-            if (questionsModel.getAnswers() != null && questionsModel.getAnswers().size() >= position)
-                isRepeater = questionsModel.getAnswers().get(position).isRepeater();
-        }
+            suveryAnswer = new AnswerModel.SuveryAnswer();
+            suveryAnswer.setAnswer(answer);
+            suveryAnswer.setNextId(position);
+            suveryAnswer.setQuestionId(questionsModel.getQuestionId());
+            Log.d("Q_ID", questionsModel.getQuestionId());
+            suveryAnswer.setQuestionKey(questionsModel.getQuestionKey());
+            if (isRepeater || localIsRepeater && (repeaterOption == 0) || localIsRepeater) {
+                repeaterOption = position;
+                isRepeater = localIsRepeater;
+                if (questionsModel.getAnswers() != null && questionsModel.getAnswers().size() >= position)
+                    isRepeater = questionsModel.getAnswers().get(position).isRepeater();
+            }
 //     } else {
 
-        if (object != null)
-            status = (String) object;
+            if (object != null)
+                status = (String) object;
 
-        if (isNew)
-            runtime(answer, questionsModel);
-
+            if (isNew)
+                runtime(answer, questionsModel);
+        } catch (Exception e) {
+                e.printStackTrace();
+        }
     }
 
 
@@ -571,7 +837,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     }
 
 
-    private void runtime(String ans, QuestionsModel questionsModel) {
+    private void runtime(String ans, QuestionsModel questionsModel) throws Exception {
         //hid_148 //
         if (ans.contains("{")) {
             HashMap<String, String> hashMap = new Gson().fromJson(ans, HashMap.class);
@@ -583,8 +849,8 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         if (questionsModel.getQuestionId().equals("hid_180")) {
             int answer = Integer.parseInt(ans);
             if (answer >= 12) {
-                Stack<AnswerModel.SuveryAnswer> reverseList = answerModel.getSuveryAnswers();
-                Collections.reverse(reverseList);
+                List<AnswerModel.SuveryAnswer> reverseList = answerModel.getSuveryAnswers();
+                //Collections.reverse(reverseList);
                 for (AnswerModel.SuveryAnswer suveryAnswer : reverseList) {
                     if (suveryAnswer.getQuestionId().equals("hid_176")) {
                         if (suveryAnswer.getAnswer().equals("1")) {
@@ -769,7 +1035,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
     @Override
     public void hidePrev() {
-
+        findViewById(R.id.prev).setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -792,7 +1058,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     }
 
 
-    private void warning() {
+    private void warning() throws Exception {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

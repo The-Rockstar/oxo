@@ -303,7 +303,7 @@ public class SnappyNoSQL {
         } catch (SnappydbException e) {
             e.printStackTrace();
         }
-        return null;
+        return new Stack<>();
     }
 
     public void removeStack(String key) {
@@ -353,6 +353,13 @@ public class SnappyNoSQL {
     List<PersonModel> personModels = new ArrayList<>();
 
     public AreaModel saveArea(AreaModel answerModel, String key) {
+        if (key.contains("ONE") || key.contains("TWO") || key.contains("THREE")) {
+            key = key.replace("ONE", " ");
+            key = key.replace("TWO", " ");
+            key = key.replace("FOUR", " ");
+
+        }
+
         personModels.clear();
         try {
             List<PersonModel> rtfModels = answerModel.getMemberRtfModels();
@@ -382,16 +389,30 @@ public class SnappyNoSQL {
 
     public AreaModel getArea(String key) {
         try {
+            if (key.contains("ONE") || key.contains("TWO") || key.contains("THREE")) {
+                key = key.replace("ONE", " ");
+                key = key.replace("TWO", " ");
+                key = key.replace("FOUR", " ");
+
+            }
+
             if (snappyDB.exists("AREA" + key))
                 return snappyDB.get("AREA" + key, AreaModel.class);
         } catch (SnappydbException e) {
             e.printStackTrace();
         }
-        return null;
+        return new AreaModel();
     }
 
     public void removeArea(String key) {
         try {
+            if (key.contains("ONE") || key.contains("TWO") || key.contains("THREE")) {
+                key = key.replace("ONE", " ");
+                key = key.replace("TWO", " ");
+                key = key.replace("FOUR", " ");
+
+            }
+
             if (snappyDB.exists("AREA" + key))
                 snappyDB.del("AREA" + key);
         } catch (SnappydbException e) {

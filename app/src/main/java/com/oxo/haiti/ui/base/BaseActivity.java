@@ -63,7 +63,20 @@ public abstract class BaseActivity extends AppCompatActivity implements DialogIn
     }
 
     public void messageToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        try {
+            final Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT);
+            toast.show();
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    toast.cancel();
+                }
+            }, 100);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -94,6 +107,8 @@ public abstract class BaseActivity extends AppCompatActivity implements DialogIn
     protected void removePerson(String key, String Name) {
         try {
             if (key != null) {
+                key=key.replace("mmmm","");
+                key=key.replace("xxxx","");
                 key = key.replace("TWO", "ONE");
             }
 

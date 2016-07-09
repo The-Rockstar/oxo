@@ -39,7 +39,7 @@ public class ControlActivity extends BaseActivity implements View.OnClickListene
         intent.putExtra("SURVEY", "TWO");
         intent.putExtra("mainId", "asdsad");
         intent.putExtra("Name", "jas");
-     //   startActivity(intent);
+//        startActivity(intent);
 
         setContentView(R.layout.activity_main);
         setUpToolbar();

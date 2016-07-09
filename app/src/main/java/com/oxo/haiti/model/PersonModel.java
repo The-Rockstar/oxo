@@ -28,6 +28,17 @@ public class PersonModel {
     @Expose
     private String typo;
 
+    @SerializedName("loopCount")
+    @Expose
+    private Integer loopCount;
+
+    public Integer getLoopCount() {
+        return loopCount;
+    }
+
+    public void setLoopCount(Integer loopCount) {
+        this.loopCount = loopCount;
+    }
 
     public String getName() {
         return name;

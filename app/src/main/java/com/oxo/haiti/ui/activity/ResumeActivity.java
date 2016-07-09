@@ -36,6 +36,7 @@ public class ResumeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         try {
             areaModels.clear();
             List<String> keys = SnappyNoSQL.getInstance().getKeysArea();
@@ -63,6 +64,13 @@ public class ResumeActivity extends AppCompatActivity {
             ListView listView = (ListView) findViewById(R.id.datalist);
 
             problemSolver();
+            for (String key : sOneKeys) {
+                for (AreaModel areaModel : areaModels) {
+                    if (areaModel.get_id().contains(key)){
+                        areaModels.remove(areaModel);
+                    }
+                }
+            }
             LocalAdapter localAdapter = new LocalAdapter(areaModels, sOneKeys);
             listView.setAdapter(localAdapter);
             if ((areaModels.size() + sOneKeys.size()) == 0) {
@@ -80,7 +88,7 @@ public class ResumeActivity extends AppCompatActivity {
         sOneKeys.clear();
         List<String> keys = SnappyNoSQL.getInstance().getKeys();
         for (String key : keys) {
-            if (key.contains("ONE")) {
+            if (key.contains("ONE") && !key.contains("StopStatus")) {
                 sOneKeys.add(key);
                 Log.d("TAG===", key);
             }
@@ -162,9 +170,10 @@ public class ResumeActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         String id = (String) v.getTag();
                         Intent intent = new Intent(ResumeActivity.this, FragmentControler.class);
-                        intent.putExtra("key", id);
+                        intent.putExtra("key", id + "xxxx");
                         intent.putExtra("SURVEY", "TWO");
                         intent.putExtra("mainId", id);
+                        intent.putExtra("RESUME", true);
                         intent.putExtra("Name", one.getText());
 
                         startActivity(intent);
@@ -175,9 +184,10 @@ public class ResumeActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         String id = (String) v.getTag();
                         Intent intent = new Intent(ResumeActivity.this, FragmentControler.class);
-                        intent.putExtra("key", id);
+                        intent.putExtra("key", id + "mmmm");
                         intent.putExtra("SURVEY", "TWO");
                         intent.putExtra("mainId", id);
+                        intent.putExtra("RESUME", true);
                         intent.putExtra("Name", two.getText());
                         startActivity(intent);
 
@@ -220,6 +230,10 @@ public class ResumeActivity extends AppCompatActivity {
                         public void onClick(View v) {
                             String id = (String) v.getTag();
                             Intent intent = new Intent(ResumeActivity.this, FragmentControler.class);
+
+                            if (!id.contains("ONE")) {
+                                id = "ONE" + id;
+                            }
                             intent.putExtra("key", id);
                             intent.putExtra("SURVEY", "ONE");
                             intent.putExtra("mainId", id);
