@@ -31,6 +31,18 @@ public class AnswerModel implements Serializable {
     private String generated_survey;
 
 
+    @SerializedName("area_model")
+    @Expose
+    private AreaModel areaModel;
+
+    public AreaModel getAreaModel() {
+        return areaModel;
+    }
+
+    public void setAreaModel(AreaModel areaModel) {
+        this.areaModel = areaModel;
+    }
+
     public String getGenerated_survey() {
         return generated_survey;
     }
@@ -151,6 +163,69 @@ public class AnswerModel implements Serializable {
         @SerializedName("loopNumber")
         @Expose
         private int loopNumber = 0;
+
+        @SerializedName("x")
+        @Expose
+        private boolean dob_;
+
+        @SerializedName("y")
+        @Expose
+        private boolean dod_;
+
+        @SerializedName("z")
+        @Expose
+        private boolean die_when_ansent_;
+
+
+        @SerializedName("q")
+        @Expose
+        private boolean die_after_six_week_abortion_;
+
+        @SerializedName("w")
+        @Expose
+        private boolean die_with_tb_drug_;
+
+
+        public boolean isDob_() {
+            return dob_;
+        }
+
+        public void setDob_(boolean dob_) {
+            this.dob_ = dob_;
+        }
+
+        public boolean isDod_() {
+            return dod_;
+        }
+
+        public void setDod_(boolean dod_) {
+            this.dod_ = dod_;
+        }
+
+        public boolean isDie_when_ansent_() {
+            return die_when_ansent_;
+        }
+
+        public void setDie_when_ansent_(boolean die_when_ansent_) {
+            this.die_when_ansent_ = die_when_ansent_;
+        }
+
+        public boolean isDie_after_six_week_abortion_() {
+            return die_after_six_week_abortion_;
+        }
+
+        public void setDie_after_six_week_abortion_(boolean die_after_six_week_abortion_) {
+            this.die_after_six_week_abortion_ = die_after_six_week_abortion_;
+        }
+
+        public boolean isDie_with_tb_drug_() {
+            return die_with_tb_drug_;
+        }
+
+        public void setDie_with_tb_drug_(boolean die_with_tb_drug_) {
+            this.die_with_tb_drug_ = die_with_tb_drug_;
+        }
+
 
         public int getNext_id() {
             return next_id;

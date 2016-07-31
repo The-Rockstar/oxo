@@ -1,11 +1,13 @@
 package com.oxo.haiti.ui.fargments;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.Html;
 import android.text.InputType;
@@ -84,6 +86,7 @@ public class DynamicFragment extends Fragment {
         dynamicFragment.commonInterface = commonInterface;
         dynamicFragment.questionsModel = questionsModel;
         dynamicFragment.answerModel = answerModel;
+        spinners.clear();
         return dynamicFragment;
     }
 
@@ -243,6 +246,8 @@ public class DynamicFragment extends Fragment {
                                       @Override
                                       public void run() {
                                           try {
+
+
                                               answerContainer.removeAllViews();
                                               FragmentControler fragmentControler = (FragmentControler) getActivity();
 
@@ -341,6 +346,8 @@ public class DynamicFragment extends Fragment {
                                                           String s = "Kounyea m vle pale de timoun ki se yon [A3a] ki genyen [A3b] lane";
                                                           List<PersonModel> rtfModels = fragmentControler.getPersionsList().get(FragmentControler.child);
                                                           Collections.shuffle(rtfModels);
+                                                          Collections.shuffle(rtfModels);
+
                                                           for (PersonModel personModel : rtfModels) {
                                                               try {
                                                                   if (Integer.parseInt(personModel.getAge()) <= 5 && !fragmentControler.OneCilds.contains(personModel)) {
@@ -370,13 +377,14 @@ public class DynamicFragment extends Fragment {
                                                           for (Condition.ConditionMode conditionMode : condition.getValue().getConditions()) {
                                                               if (answer.getQuestionId().equals(conditionMode.getQuestionOrder())) {
                                                                   if (conditionMode.getCompare().equals("==")) {
-                                                                      if (Integer.parseInt(answer.getAnswer()) == conditionMode.getValue()) {
-                                                                          for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
-                                                                              answer1.setOptionNext(conditionMode.getQuestionNext());
+                                                                      if (!conditionMode.getQuestionOrder().equals("hid_120"))
+                                                                          if (Integer.parseInt(answer.getAnswer()) == conditionMode.getValue()) {
+                                                                              for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
+                                                                                  answer1.setOptionNext(conditionMode.getQuestionNext());
 
+                                                                              }
+                                                                              break;
                                                                           }
-                                                                          break;
-                                                                      }
                                                                   } else if (conditionMode.getCompare().equals("<")) {
                                                                       if (Integer.parseInt(answer.getAnswer()) < conditionMode.getValue()) {
                                                                           for (QuestionsModel.Answer answer1 : questionsModel.getAnswers()) {
@@ -404,19 +412,42 @@ public class DynamicFragment extends Fragment {
                                                   if (questionsModel.getQuestionId().equals("hid_365")) {
                                                       AreaModel areaModel = fragmentControler.saveAreax();
                                                       List<PersonModel> rtfModels = areaModel.getMemberRtfModels();
+                                                      Map<String, List<PersonModel>> stringListMap = fragmentControler.getPersionsList();
                                                       String s = "";
-                                                      if (rtfModels.size() > 0) {
-                                                          for (PersonModel personModel : rtfModels) {
+                                                      if (stringListMap.size() > 0) {
+                                                          List<PersonModel> personModels1 = new ArrayList<>(stringListMap.get(FragmentControler.persons));
+                                                          int i = 0;
+                                                          for (PersonModel personModel : stringListMap.get(FragmentControler.persons)) {
                                                               if (personModel.getName() != null) {
                                                                   if (s.contains("_A")) {
                                                                       s = s.concat(" epi ");
                                                                       s = s.concat(addAgeSex(1, personModel, areaModel, "_B"));
+                                                                      int posi = 0;
+                                                                      for (PersonModel personModel1 : new ArrayList<>(fragmentControler.personModels)) {
+                                                                          if (personModel1.equals(personModel)) {
+                                                                              fragmentControler.personModels.get(posi).setIs_seleted(true);
+                                                                          }
+                                                                          posi++;
+                                                                      }
+                                                                      PersonModel personModel1 = personModels1.get(i);
+                                                                      personModel1.setIs_seleted(true);
                                                                       break;
 
                                                                   }
+                                                                  int posi = 0;
+                                                                  for (PersonModel personModel1 : new ArrayList<>(fragmentControler.personModels)) {
+                                                                      if (personModel1.equals(personModel)) {
+                                                                          fragmentControler.personModels.get(posi).setIs_seleted(true);
+                                                                      }
+                                                                      posi++;
+                                                                  }
+                                                                  PersonModel personModel1 = personModels1.get(i);
+                                                                  personModel1.setIs_seleted(true);
                                                                   s = addAgeSex(0, personModel, areaModel, "_A");
+                                                                  i++;
                                                               }
                                                           }
+                                                          areaModel.setMemberRtfModels(personModels1);
                                                       }
 
                                                       s = source.replace("random_selected_persons", s);
@@ -425,6 +456,7 @@ public class DynamicFragment extends Fragment {
                                                   } else if (questionsModel.getQuestionId().equals("hid_305")) {
                                                       String s = questionsModel.getQuestionText();
                                                       List<PersonModel> rtfModels = fragmentControler.getPersionsList().get(FragmentControler.child);
+                                                      Collections.shuffle(rtfModels);
                                                       for (PersonModel personModel : rtfModels) {
                                                           try {
                                                               if (Integer.parseInt(personModel.getAge()) <= 5) {
@@ -460,13 +492,13 @@ public class DynamicFragment extends Fragment {
                                                               source = source.replace("#n2#", FragmentControler.loopTwo == 0 ? "" + 1 : "" + FragmentControler.loopTwo);
                                                       } else if (source.contains("#n3#")) {
                                                           if (questionsModel.getQuestionId().equals("hid_244")) {
-                                                              int count = FragmentControler.loopThree + 1;
+                                                              int count = FragmentControler.loopThree;
                                                               source = source.replace("#n3#", count + "");
                                                           } else
                                                               source = source.replace("#n3#", FragmentControler.loopThree == 0 ? "" + 1 : "" + FragmentControler.loopThree);
                                                       } else if (source.contains("#n4#")) {
                                                           if (questionsModel.getQuestionId().equals("hid_280")) {
-                                                              int count = FragmentControler.loopFour + 1;
+                                                              int count = FragmentControler.loopFour;
                                                               source = source.replace("#n4#", count + "");
                                                           } else
                                                               source = source.replace("#n4#", FragmentControler.loopFour == 0 ? "" + 1 : "" + FragmentControler.loopFour);
@@ -480,16 +512,30 @@ public class DynamicFragment extends Fragment {
                                                   questionDec.setText(questionsModel.getQuestionDesc());
                                               }
                                               showBloodPresure();
+                                              if (questionsModel.getQuestionId().equals("hid_268")) {
+                                                  fragmentControler.executeAnswers();
+                                                  showPerson(FragmentControler.loopThreesPerson);
+                                              }
+
+
+                                              if (questionsModel.getQuestionId().equals("hid_300")) {
+                                                  fragmentControler.executeAnswers();
+                                                  showPerson(FragmentControler.loopFourPerson);
+                                              }
+
 
                                           } catch (Exception e) {
                                               Log.d("Exception", e.getMessage());
                                               // showDialogMessage("Something went wrong need to contact developer");
                                           } finally {
 
-                                              if (questionsModel.getQuestionId().equals("hid_160") || questionsModel.getQuestionId().equals("hid_161") || questionsModel.getQuestionId().equals("hid_188") || questionsModel.getQuestionId().equals("hid_268") || questionsModel.getQuestionId().equals("hid_189")) {
-                                                  commonInterface.hidePrev();
+                                              try {
+                                                  if (questionsModel.getQuestionId().equals("hid_160") || questionsModel.getQuestionId().equals("hid_161") || questionsModel.getQuestionId().equals("hid_188") || questionsModel.getQuestionId().equals("hid_268") || questionsModel.getQuestionId().equals("hid_189")) {
+                                                      commonInterface.hidePrev();
+                                                  }
+                                              } catch (Exception e) {
+                                                  e.printStackTrace();
                                               }
-
                                           }
 
 
@@ -612,7 +658,7 @@ public class DynamicFragment extends Fragment {
 
     }
 
-    List<Spinner> spinners = new ArrayList<>();
+    public static List<Spinner> spinners = new ArrayList<>();
     boolean hack = false;
 
     HashMap<Integer, String> selectMap = new HashMap<>();
@@ -746,8 +792,15 @@ public class DynamicFragment extends Fragment {
                                                                   commonInterface.hideNext();
                                                           }
                                                       } else {
+                                                          System.out.println("else");
+                                                          if (getActivity().getIntent().getExtras().getString("SURVEY").equals("ONE")) {
+                                                              System.out.println("clear map");
+                                                              selectMap.clear();
+                                                          }
+                                                          if (selectMap.containsKey("" + index))
+                                                              selectMap.remove("" + index);
                                                           selectMap.put(index, "" + position);
-                                                          String s1 = new Gson().toJson(selectMap).toString();
+                                                          String s1 = new Gson().toJson(selectMap, HashMap.class).toString();
 
                                                           commonInterface.getNextPosition(questionsModel.getAnswers().get(0).getOptionNext(), questionsModel, s1, true, "", questionsModel.getAnswers().get(0).isRepeater());
                                                           if (questionsModel.getQuestionId().equals("iid_240")) {
@@ -993,15 +1046,22 @@ public class DynamicFragment extends Fragment {
             editText.setInputType(InputType.TYPE_CLASS_NUMBER);
             UPPER_LIMIT = questionsModel.getMax();
             LOWER_LIMIT = questionsModel.getMin();
-
             UPPER_LIMIT = questionsModel.getMax();
             LOWER_LIMIT = questionsModel.getMin();
         }
 
 
-        if (suveryAnswer != null)
-            editText.setText(suveryAnswer.getAnswer());
-
+        if (suveryAnswer != null) {
+            if (suveryAnswer.getAnswer().contains("{")) {
+                try {
+                    HashMap<String, String> map = new Gson().fromJson(suveryAnswer.getAnswer(), HashMap.class);
+                    editText.setText(map.get("text"));
+                } catch (Exception e) {
+                    editText.setText(suveryAnswer.getAnswer());
+                }
+            } else
+                editText.setText(suveryAnswer.getAnswer());
+        }
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -1254,7 +1314,12 @@ public class DynamicFragment extends Fragment {
                         String answer = suveryAnswer.getAnswer();
                         HashMap<String, String> hashMap = new Gson().fromJson(answer, HashMap.class);
                         String finalAnswer = hashMap.get("checkBox");
-                        checkBoxAnswers = new ArrayList<>(Arrays.asList(finalAnswer.split(",")));
+
+                        String replace = finalAnswer.replace("[", "");
+                        System.out.println(replace);
+                        String replace1 = replace.replace("]", "");
+                        String replace2 = replace1.replace(" ", "");
+                        checkBoxAnswers = new ArrayList<>(Arrays.asList(replace2.split(",")));
                     }
                 } catch (Exception e) {
 
@@ -1268,10 +1333,13 @@ public class DynamicFragment extends Fragment {
 
             if (questionsModel.getAnswers().get(i).getOptionText().contains("Lòt") || questionsModel.getAnswers().get(i).getOptionText().contains("lòt") || questionsModel.getAnswers().get(i).getOptionText().toLowerCase().indexOf("lòt") != -1) {
                 otherCheckBox = checkBox;
+
                 checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         if (isChecked) {
+                            String value = (String) buttonView.getTag();
+                            checkBoxAnswers.add(value);
                             commonInterface.hideNext();
                             if (!checkboxlist.isEmpty()) {
                                 for (Integer id : checkboxlist.keySet()) {
@@ -1400,9 +1468,31 @@ public class DynamicFragment extends Fragment {
         final RadioButton[] rb = new RadioButton[questionsModel.getAnswers().size()];
         rg = new RadioGroup(getContext()); //create the RadioGroup
         rg.setOrientation(RadioGroup.VERTICAL);//or RadioGroup.VERTICAL
+        HashMap<String, String> answerhashMap = new HashMap<>();
 
+        if (suveryAnswer != null) {
+            try {
+                if (suveryAnswer.getAnswer().contains("{")) {
+                    String answer = suveryAnswer.getAnswer();
+                    answerhashMap = new Gson().fromJson(answer, HashMap.class);
+                    String finalAnswer = answerhashMap.get("checkBox");
+
+                    String replace = finalAnswer.replace("[", "");
+                    System.out.println(replace);
+                    String replace1 = replace.replace("]", "");
+                    String replace2 = replace1.replace(" ", "");
+
+                    System.out.println(replace1);
+                    checkBoxAnswers = new ArrayList<>(Arrays.asList(replace2.split(",")));
+                }
+            } catch (Exception e) {
+
+            }
+        }
 
         for (int i = 0; i < questionsModel.getAnswers().size(); i++) {
+
+
             if (questionsModel.getAnswers().get(i).getOptionType().equals("checkbox")) {
                 final CheckBox checkBox = new CheckBox(getContext());
                 checkBox.setId(130 + i);
@@ -1412,28 +1502,8 @@ public class DynamicFragment extends Fragment {
                 answerContainer.addView(checkBox);
 
 
-                if (suveryAnswer != null) {
-                    try {
-                        if (suveryAnswer.getAnswer().contains("{")) {
-                            String answer = suveryAnswer.getAnswer();
-                            HashMap<String, String> hashMap = new Gson().fromJson(answer, HashMap.class);
-                            String finalAnswer = hashMap.get("checkBox");
-                            String replace = finalAnswer.replace("[", "");
-                            System.out.println(replace);
-                            String replace1 = replace.replace("]", "");
-                            String replace2 = replace1.replace(" ", "");
-
-                            System.out.println(replace1);
-                            checkBoxAnswers = new ArrayList<>(Arrays.asList(replace2.split(",")));
-                        }
-                    } catch (Exception e) {
-
-                    }
-
-                    if (checkBoxAnswers.contains(questionsModel.getAnswers().get(i).getOptionValue())) {
-                        checkBox.setChecked(true);
-                    }
-
+                if (checkBoxAnswers.contains(questionsModel.getAnswers().get(i).getOptionValue())) {
+                    checkBox.setChecked(true);
                 }
 
                 if (questionsModel.getAnswers().get(i).getOptionText().contains("Lòt")) {
@@ -1442,6 +1512,8 @@ public class DynamicFragment extends Fragment {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                             if (isChecked) {
+                                String value = (String) buttonView.getTag();
+                                checkBoxAnswers.add(value);
                                 int selectedid = rg.getCheckedRadioButtonId();
                                 if (selectedid > 0) {
                                     rg.clearCheck();
@@ -1583,7 +1655,12 @@ public class DynamicFragment extends Fragment {
                 }
             });
         }
+
+
         answerContainer.addView(rg);
+        if (answerhashMap.containsKey("text")) {
+            generateEt(answerhashMap);
+        }
 
 
     }
@@ -1617,14 +1694,16 @@ public class DynamicFragment extends Fragment {
         return answerStr;
     }
 
+    LinearLayout personView = null;
 
     void showPerson(final String type) throws Exception {
-        answerContainer.removeAllViews();
-        LinearLayout editTextInflatedView = (LinearLayout) getLayoutInflater(getArguments()).inflate(R.layout.show_person, null);
-        LinearLayout namelayout = (LinearLayout) editTextInflatedView.findViewById(R.id.namelayout);
-        LinearLayout sexLayout = (LinearLayout) editTextInflatedView.findViewById(R.id.sexlayout);
-        LinearLayout ageLayout = (LinearLayout) editTextInflatedView.findViewById(R.id.agelayout);
-        LinearLayout delete = (LinearLayout) editTextInflatedView.findViewById(R.id.delete);
+        if (personView != null)
+            answerContainer.removeView(personView);
+        personView = (LinearLayout) getLayoutInflater(getArguments()).inflate(R.layout.show_person, null);
+        LinearLayout namelayout = (LinearLayout) personView.findViewById(R.id.namelayout);
+        LinearLayout sexLayout = (LinearLayout) personView.findViewById(R.id.sexlayout);
+        LinearLayout ageLayout = (LinearLayout) personView.findViewById(R.id.agelayout);
+        LinearLayout delete = (LinearLayout) personView.findViewById(R.id.delete);
         FragmentControler fragmentControler = (FragmentControler) getActivity();
         final List<PersonModel> personModels = fragmentControler.getPersonModels();
         switch (type) {
@@ -1632,6 +1711,12 @@ public class DynamicFragment extends Fragment {
 
                 break;
             case "hh_children":
+                namelayout.setVisibility(View.GONE);
+                break;
+            case FragmentControler.loopThreesPerson:
+                namelayout.setVisibility(View.GONE);
+                break;
+            case FragmentControler.loopFourPerson:
                 namelayout.setVisibility(View.GONE);
                 break;
         }
@@ -1646,7 +1731,7 @@ public class DynamicFragment extends Fragment {
                 deleteTextView.setTag(R.string.success, personModel);
 
 
-                if (!type.equals("hh_children")) {
+                if (!type.equals("hh_children") && !type.equals(FragmentControler.loopThreesPerson) && !type.equals(FragmentControler.loopFourPerson)) {
                     i++;
                     deleteTextView.setTag(R.string.activr, 1);
                     TextView name = new TextView(getContext());
@@ -1666,6 +1751,58 @@ public class DynamicFragment extends Fragment {
                     age.setText(personModel.getAge());
 
                     namelayout.addView(name);
+                    sexLayout.addView(sex);
+                    ageLayout.addView(age);
+
+
+                } else if (type.equals(FragmentControler.loopThreesPerson)) {
+                    i++;
+                    deleteTextView.setTag(R.string.activr, 3);
+                    TextView sex = new TextView(getContext());
+                    sex.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+                    TextView age = new TextView(getContext());
+                    age.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+                    age.setId(new Random().nextInt(43));
+                    age.setTextColor(Color.BLACK);
+                    sex.setId(new Random().nextInt(54));
+                    sex.setTextColor(Color.BLACK);
+                    sex.setText(personModel.getSex().equals("1") ? "Gason" : "Fi");
+                    age.setText(personModel.getAge());
+                    sexLayout.addView(sex);
+                    ageLayout.addView(age);
+
+
+                } else if (type.equals(FragmentControler.loopFourPerson)) {
+                    i++;
+                    deleteTextView.setTag(R.string.activr, 4);
+                    TextView sex = new TextView(getContext());
+                    sex.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+                    TextView age = new TextView(getContext());
+                    age.setTextSize(getActivity().getResources().getDimension(R.dimen.text_size));
+                    age.setId(new Random().nextInt(43));
+                    age.setTextColor(Color.BLACK);
+                    sex.setId(new Random().nextInt(54));
+                    sex.setTextColor(Color.BLACK);
+                    sex.setText(personModel.getSex().equals("1") ? "Gason" : "Fi");
+                    age.setText(personModel.getAge());
+
+                    try {
+                        String ans = personModel.getDob();
+                        Log.d("dob", ans);
+                        if (ans.contains("{")) {
+                            HashMap<Integer, String> selectMap = new Gson().fromJson(ans, HashMap.class);
+                            if (selectMap.containsKey("1")) {
+                                ans = selectMap.get("1");
+                            }
+                            if (selectMap.containsKey("0")) {
+                                ans = selectMap.get("0");
+                            }
+                        }
+                        age.setText(ans);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     sexLayout.addView(sex);
                     ageLayout.addView(age);
 
@@ -1692,11 +1829,10 @@ public class DynamicFragment extends Fragment {
                     public void onClick(View v) {
                         try {
                             PersonModel personModel1 = (PersonModel) v.getTag(R.string.success);
-                            personModels.remove(personModel1);
                             Integer integer = (Integer) v.getTag(R.string.activr);
-                            removeLoopCount(personModel1.getLoopCount(), integer);
                             //removeLoopCount(integer);
-                            showPerson(type);
+                            Log.d("LoopNo", " = " + integer);
+                            opener(personModel1.getLoopCount(), integer, type, personModels, personModel1);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -1706,8 +1842,33 @@ public class DynamicFragment extends Fragment {
 
             }
         }
-        answerContainer.addView(editTextInflatedView);
+        answerContainer.addView(personView);
     }
+
+
+    void opener(final int i, final int loopType, final String type, final List<PersonModel> personModels, final PersonModel personModel) {
+        new AlertDialog.Builder(getContext())
+                .setTitle(getString(R.string.app_name))
+                .setMessage("Eske ou si? ")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int whichButton) {
+
+                        try {
+                            personModels.remove(personModel);
+                            removeLoopCount(i, loopType);
+                            showPerson(type);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+                })
+                .setNegativeButton(R.string.no, null).show();
+    }
+
 
     void removeLoopCount(int i, int loopType) throws Exception {
         List<AnswerModel.SuveryAnswer> suveryAnswers = new ArrayList<>(answerModel.getSuveryAnswers());
@@ -1719,8 +1880,10 @@ public class DynamicFragment extends Fragment {
                 Set<String> keys = bundle.keySet();
                 for (String key : keys) {
                     if (key != null)
-                        if (key.contains("One") || key.contains("Two")) {
+                        if (key.contains("One") || key.contains("Two") || key.contains("Three") || key.contains("Four")) {
                             getActivity().getIntent().removeExtra(key);
+                            Log.d("deleted", " = " + key);
+
                         }
                 }
 

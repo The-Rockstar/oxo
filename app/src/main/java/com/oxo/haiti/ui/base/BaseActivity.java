@@ -72,7 +72,7 @@ public abstract class BaseActivity extends AppCompatActivity implements DialogIn
                 public void run() {
                     toast.cancel();
                 }
-            }, 100);
+            }, 1000);
         } catch (Exception e) {
             e.printStackTrace();
         }

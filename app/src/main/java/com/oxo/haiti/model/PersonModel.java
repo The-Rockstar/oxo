@@ -32,6 +32,82 @@ public class PersonModel {
     @Expose
     private Integer loopCount;
 
+
+
+    @SerializedName("dob")
+    @Expose
+    private String dob;
+
+    @SerializedName("dod")
+    @Expose
+    private String dod;
+
+    @SerializedName("die_when_ansent")
+    @Expose
+    private String die_when_ansent;
+
+
+    @SerializedName("die_after_six_week_abortion")
+    @Expose
+    private String die_after_six_week_abortion;
+
+    @SerializedName("die_with_tb_drug")
+    @Expose
+    private String die_with_tb_drug;
+
+    @SerializedName("is_seleted")
+    @Expose
+    private boolean is_seleted;
+
+
+    public boolean is_seleted() {
+        return is_seleted;
+    }
+
+    public void setIs_seleted(boolean is_seleted) {
+        this.is_seleted = is_seleted;
+    }
+
+    public String getDob() {
+        return dob;
+    }
+
+    public void setDob(String dob) {
+        this.dob = dob;
+    }
+
+    public String getDod() {
+        return dod;
+    }
+
+    public void setDod(String dod) {
+        this.dod = dod;
+    }
+
+    public String getDie_when_ansent() {
+        return die_when_ansent;
+    }
+
+    public void setDie_when_ansent(String die_when_ansent) {
+        this.die_when_ansent = die_when_ansent;
+    }
+
+    public String getDie_after_six_week_abortion() {
+        return die_after_six_week_abortion;
+    }
+
+    public void setDie_after_six_week_abortion(String die_after_six_week_abortion) {
+        this.die_after_six_week_abortion = die_after_six_week_abortion;
+    }
+
+    public String getDie_with_tb_drug() {
+        return die_with_tb_drug;
+    }
+
+    public void setDie_with_tb_drug(String die_with_tb_drug) {
+        this.die_with_tb_drug = die_with_tb_drug;
+    }
+
     public Integer getLoopCount() {
         return loopCount;
     }

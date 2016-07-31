@@ -371,7 +371,7 @@ public class SnappyNoSQL {
                     }
             }
             if (personModels.size() >= 2) {
-                personModels = personModels.subList(0, 2);
+//                personModels = personModels.subList(0, 2);
             }
             answerModel.setMemberRtfModels(personModels);
             snappyDB.put("AREA" + key, answerModel);

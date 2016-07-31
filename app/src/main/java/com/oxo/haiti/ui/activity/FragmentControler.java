@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
@@ -23,11 +22,13 @@ import com.oxo.haiti.adapter.QuestionAdapter;
 import com.oxo.haiti.model.AnswerModel;
 import com.oxo.haiti.model.AreaModel;
 import com.oxo.haiti.model.PersonModel;
+import com.oxo.haiti.model.Positions;
 import com.oxo.haiti.model.QuestionsModel;
 import com.oxo.haiti.service.RestAdapter;
 import com.oxo.haiti.storage.ContentStorage;
 import com.oxo.haiti.storage.SnappyNoSQL;
 import com.oxo.haiti.ui.base.BaseActivity;
+import com.oxo.haiti.ui.fargments.DynamicFragment;
 import com.oxo.haiti.utils.CommonInterface;
 import com.oxo.haiti.utils.Connectivity;
 
@@ -51,6 +52,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     private QuestionAdapter questionAdapter;
     private int nextPosition;
     private Stack<Integer> prevSteps = new Stack<>();
+    private Stack<Integer> nextSteps = new Stack<>();
     private List<QuestionsModel> questionsModelList = null;
     private AnswerModel.SuveryAnswer suveryAnswer;
     private AnswerModel answerModel;
@@ -61,13 +63,16 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     private int repeaterOption;
     private AreaModel areaModel = new AreaModel();
     public static int loopOne = 1, loopTwo = 1, loopThree = 1, loopFour = 1, loopFive = 1;
-    List<PersonModel> personModels = new ArrayList<>();
+   public List<PersonModel> personModels = new ArrayList<>();
     public static boolean isLoaded = false;
     public static boolean resumeFlag = false;
     public List<PersonModel> OneCilds = new ArrayList<>();
     public static final String child = "hh_children";
     public static final String persons = "hh_person";
+    public static final String loopThreesPerson = "hh_Loop_three";
+    public static final String loopFourPerson = "hh_Loop_four";
 
+//    Map<Integer, Positions> positionsMap = new HashMap<>();
 
     @Override
     protected void onDestroy() {
@@ -114,12 +119,9 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         } catch (Exception e) {
 
         }
-//        viewPager.setCurrentItem(executeQuestionId(124));
+//        viewPager.setCurrentItem(executeQuestionId(468));
     }
 
-    public List<QuestionsModel> getQuestionsModelList() {
-        return questionsModelList;
-    }
 
     private void resumeSurvey(String surveyID, String isOne) throws Exception {
         if (getIntent().getExtras().getBoolean("RESUME")) {
@@ -171,6 +173,13 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     }
 
     private void pauseSurvey() {
+
+        if (areaModel != null && personModels != null) {
+            areaModel.setMemberRtfModels(personModels);
+            answerModel.setAreaModel(areaModel);
+        }
+
+
         if (getIntent().getExtras().getString("SURVEY").equals("ONE")) {
             ContentStorage.getInstance(this).savePositionSurveyOne(viewPager.getCurrentItem(), key);
             SnappyNoSQL.getInstance().saveState(answerModel, key);
@@ -189,6 +198,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             }
             answerModel.setGenerated_survey(key);
             final String data = new Gson().toJson(answerModel);
+            Log.d("FINAL data", data);
             SnappyNoSQL.getInstance().saveOfflineSurvey(data);
         } catch (Exception e) {
             Log.d("Stop", "Inter mediator");
@@ -203,6 +213,8 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         toolbar.findViewById(R.id.settings).setOnClickListener(this);
     }
 
+
+    int currantPosition = 0;
 
     private void setUpAdapter() {
         viewPager = (ViewPager) findViewById(R.id.main_container);
@@ -223,6 +235,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
             @Override
             public void onPageSelected(int position) {
+                currantPosition = position;
                 for (AnswerModel.SuveryAnswer suveryAnswer : answerModel.getSuveryAnswers()) {
                     if (suveryAnswer != null && questionsModelList.get(position) != null && questionsModelList.get(position).getQuestionId().equals(suveryAnswer.getQuestionId())) {
                         getNextPosition(suveryAnswer.getNextId(), questionsModelList.get(position), suveryAnswer.getAnswer(), false, null, false);
@@ -241,6 +254,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         });
     }
 
+    int lastPosition1;
 
     @Override
     public void onClick(View v) {
@@ -283,8 +297,8 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                                     answers.add(suveryAnswer);
 
                             } else if (order >= 140 && order <= 164) {
-                                skyForce(nextPosition + "One" + loopOne);
-                                suveryAnswer.setExtra(nextPosition + "One" + loopOne);
+                                skyForce(currantPosition + "One" + loopOne);
+                                suveryAnswer.setExtra(currantPosition + "One" + loopOne);
                                 boolean updateItem = false;
                                 for (AnswerModel.SuveryAnswer temp : answers) {
                                     if (temp.getQuestionId().equals(suveryAnswer.getQuestionId()) && temp.getLoopCount() == loopOne) {
@@ -304,8 +318,8 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                                     answers.add(suveryAnswer);
                                 }
                             } else if (order >= 176 && order <= 192) {
-                                skyForce(nextPosition + "Two" + loopTwo);
-                                suveryAnswer.setExtra(nextPosition + "Two" + loopTwo);
+                                skyForce(currantPosition + "Two" + loopTwo);
+                                suveryAnswer.setExtra(currantPosition + "Two" + loopTwo);
 
                                 boolean updateItem = false;
                                 for (AnswerModel.SuveryAnswer temp : answers) {
@@ -324,8 +338,8 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                                     answers.add(suveryAnswer);
                                 }
                             } else if (order >= 244 && order <= 268) {
-                                skyForce(nextPosition + "Three" + loopThree);
-                                suveryAnswer.setExtra(nextPosition + "Three" + loopThree);
+                                skyForce(currantPosition + "Three" + loopThree);
+                                suveryAnswer.setExtra(currantPosition + "Three" + loopThree);
 
                                 boolean updateItem = false;
                                 for (AnswerModel.SuveryAnswer temp : answers) {
@@ -344,8 +358,8 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                                     answers.add(suveryAnswer);
                                 }
                             } else if (order >= 280 && order <= 300) {
-                                skyForce(nextPosition + "Four" + loopFour);
-                                suveryAnswer.setExtra(nextPosition + "Four" + loopFour);
+                                skyForce(currantPosition + "Four" + loopFour);
+                                suveryAnswer.setExtra(currantPosition + "Four" + loopFour);
 
                                 boolean updateItem = false;
                                 for (AnswerModel.SuveryAnswer temp : answers) {
@@ -365,8 +379,8 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                                 }
                             } else if (order >= 305 && order <= 336) {
                                 executeAnswers();
-                                skyForce(nextPosition + "FIVE" + loopFive);
-                                suveryAnswer.setExtra(nextPosition + "FIVE" + loopFive);
+                                skyForce(currantPosition + "FIVE" + loopFive);
+                                suveryAnswer.setExtra(currantPosition + "FIVE" + loopFive);
 
                                 boolean updateItem = false;
                                 for (AnswerModel.SuveryAnswer temp : answers) {
@@ -384,14 +398,40 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                                     suveryAnswer.setLoopNumber(5);
                                     answers.add(suveryAnswer);
                                 }
-                            } else
+                            } else {
+                                boolean updateItem = false;
+                                for (AnswerModel.SuveryAnswer temp : answers) {
+                                    if (temp.getQuestionId().equals(suveryAnswer.getQuestionId())) {
+                                        updateItem = true;
+                                        answers.remove(temp);
+                                        answers.push(suveryAnswer);
+                                        break;
+                                    }
+                                }
+                                if (!updateItem) {
+                                    answers.add(suveryAnswer);
+                                }
+                            }
+                        } else {
+                            boolean updateItem = false;
+                            for (AnswerModel.SuveryAnswer temp : answers) {
+                                if (temp.getQuestionId().equals(suveryAnswer.getQuestionId())) {
+                                    updateItem = true;
+                                    answers.remove(temp);
+                                    answers.push(suveryAnswer);
+                                    break;
+                                }
+                            }
+                            if (!updateItem) {
                                 answers.add(suveryAnswer);
-                        } else
-                            answers.add(suveryAnswer);
+                            }
+                        }
 
 //                    if (!prevSteps.contains(nextPosition)) {
                         prevSteps.push(nextPosition);
 //                    }
+                        lastPosition1 = currantPosition;
+
                         viewPager.setCurrentItem(nextPosition);
                     } else {
                         Stack<AnswerModel.SuveryAnswer> answers = answerModel.getSuveryAnswers();
@@ -399,18 +439,23 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 //                    if (!prevSteps.contains(nextPosition)) {
                         prevSteps.push(nextPosition);
 //                    }
+
                         backgroundStart();
+                        lastPosition1 = currantPosition;
+
                         if (nextPosition == 0) {
                         } else
                             viewPager.setCurrentItem(nextPosition);
                     }
+
                     break;
                 case R.id.prev:
                     resumeFlag = true;
-                    if (!prevSteps.empty()) {
+                    if (!prevSteps.isEmpty()) {
                         if (nextPosition == prevSteps.peek()) {
-                        //    prevSteps.pop();
+                            //    prevSteps.pop();
                         }
+                        nextSteps.push(prevSteps.peek());
                         viewPager.setCurrentItem(prevSteps.pop());
                     } else {
                         viewPager.setCurrentItem(0);
@@ -464,36 +509,48 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
     int personcount = 0;
     int childcount = 0;
+    int loopthreeCount = 0;
+    int loopFourCount = 0;
 
     public Map<String, List<PersonModel>> getPersionsList() {
         personcount = 0;
         childcount = 0;
+        loopthreeCount = 0;
+        loopFourCount = 0;
         Map<String, List<PersonModel>> stringPersonModelMap = new HashMap<>();
         List<PersonModel> mansList = new ArrayList<>();
         List<PersonModel> childsList = new ArrayList<>();
+        List<PersonModel> loopThree = new ArrayList<>();
+        List<PersonModel> loopFour = new ArrayList<>();
+
         for (PersonModel personModel : personModels) {
             if (personModel.getTypo().equals(persons)) {
                 personcount++;
                 personModel.setLoopCount(personcount);
                 mansList.add(personModel);
-            } else {
+            } else if (personModel.getTypo().equals(child)) {
                 childcount++;
                 personModel.setLoopCount(childcount);
                 childsList.add(personModel);
+            } else if (personModel.getTypo().equals(loopThreesPerson)) {
+                loopthreeCount++;
+                personModel.setLoopCount(loopthreeCount);
+                loopThree.add(personModel);
+            } else if (personModel.getTypo().equals(loopFourPerson)) {
+                loopFourCount++;
+                personModel.setLoopCount(loopFourCount);
+                loopFour.add(personModel);
             }
         }
         stringPersonModelMap.put(persons, mansList);
         stringPersonModelMap.put(child, childsList);
+        stringPersonModelMap.put(loopThreesPerson, loopThree);
+        stringPersonModelMap.put(loopFourPerson, loopFour);
         return stringPersonModelMap;
     }
 
 
     public void executeAnswers() {
-//        personModels.clear();
-//        loopOne = 0
-//        loopTwo = 0;
-        loopThree = 0;
-        loopFour = 0;
         loopFive = 0;
         PersonModel personModel = null;
         List<AnswerModel.SuveryAnswer> suveryAnswer = answerModel.getSuveryAnswers();
@@ -558,6 +615,138 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 }
             }
 
+            if (answer.getQuestionId().equals("hid_264") && !TextUtils.isEmpty(answer.getAnswer())) {
+                if (!answer.isDie_with_tb_drug_()) {
+                    answer.setDie_with_tb_drug_(true);
+                    personModel = new PersonModel();
+                    personModel.setTypo(loopThreesPerson);
+                    personModel.setId("" + new Random().nextInt(99));
+                    personModel.setDie_with_tb_drug(answer.getAnswer());
+                    innerLoop:
+                    for (AnswerModel.SuveryAnswer innerAnswer : suveryAnswer) {
+                        if (innerAnswer.getQuestionId().equals("hid_260") && !TextUtils.isEmpty(answer.getAnswer())) {
+                            if (!innerAnswer.isDie_after_six_week_abortion_()) {
+                                innerAnswer.setDie_after_six_week_abortion_(true);
+                                personModel.setDie_after_six_week_abortion(innerAnswer.getAnswer());
+                                break innerLoop;
+                            }
+                        }
+                    }
+
+                    for (AnswerModel.SuveryAnswer innerAnswer : suveryAnswer) {
+                        if (innerAnswer.getQuestionId().equals("hid_256") && !TextUtils.isEmpty(answer.getAnswer())) {
+                            if (!innerAnswer.isDie_when_ansent_()) {
+                                innerAnswer.setDie_when_ansent_(true);
+                                personModel.setDie_when_ansent(innerAnswer.getAnswer());
+                                break;
+                            }
+                        }
+                    }
+
+
+                    for (AnswerModel.SuveryAnswer innerAnswer : suveryAnswer) {
+                        if (innerAnswer.getQuestionId().equals("hid_252") && !TextUtils.isEmpty(answer.getAnswer())) {
+                            if (!innerAnswer.isDod_()) {
+                                innerAnswer.setDod_(true);
+                                personModel.setDod(innerAnswer.getAnswer());
+                                break;
+                            }
+                        }
+                    }
+
+                    for (AnswerModel.SuveryAnswer innerAnswer : suveryAnswer) {
+                        if (innerAnswer.getQuestionId().equals("hid_248") && !TextUtils.isEmpty(answer.getAnswer())) {
+                            if (!innerAnswer.isDob_()) {
+                                innerAnswer.setDob_(true);
+                                personModel.setDob(innerAnswer.getAnswer());
+                                break;
+                            }
+                        }
+                    }
+
+
+                    for (AnswerModel.SuveryAnswer innerAnswer : suveryAnswer) {
+                        if (innerAnswer.getQuestionId().equals("hid_244") && !TextUtils.isEmpty(answer.getAnswer())) {
+                            if (!innerAnswer.isLoadedSex()) {
+                                innerAnswer.setLoadedSex(true);
+                                personModel.setSex(innerAnswer.getAnswer());
+                                break;
+                            }
+                        }
+                    }
+
+
+                    if (!personModels.contains(personModel)) {
+                        personModels.add(personModel);
+                        areaModel.setMemberRtfModels(personModels);
+                    }
+                }
+
+            }
+
+
+            //// TODO: 16/07/16  loop four handling  for storing data
+            if (answer.getQuestionId().equals("hid_296") && !TextUtils.isEmpty(answer.getAnswer())) {
+                if (!answer.isDie_with_tb_drug_()) {
+                    answer.setDie_with_tb_drug_(true);
+                    personModel = new PersonModel();
+                    personModel.setTypo(loopFourPerson);
+                    personModel.setId("" + new Random().nextInt(99));
+                    personModel.setDie_with_tb_drug(answer.getAnswer());
+                    innerLoop:
+                    for (AnswerModel.SuveryAnswer innerAnswer : suveryAnswer) {
+                        if (innerAnswer.getQuestionId().equals("hid_292") && !TextUtils.isEmpty(answer.getAnswer())) {
+                            if (!innerAnswer.isDie_after_six_week_abortion_()) {
+                                innerAnswer.setDie_after_six_week_abortion_(true);
+                                personModel.setDie_after_six_week_abortion(innerAnswer.getAnswer());
+                                break innerLoop;
+                            }
+                        }
+                    }
+
+                    for (AnswerModel.SuveryAnswer innerAnswer : suveryAnswer) {
+                        if (innerAnswer.getQuestionId().equals("hid_288") && !TextUtils.isEmpty(answer.getAnswer())) {
+                            if (!innerAnswer.isDie_when_ansent_()) {
+                                innerAnswer.setDie_when_ansent_(true);
+                                personModel.setDie_when_ansent(innerAnswer.getAnswer());
+                                break;
+                            }
+                        }
+                    }
+
+
+                    for (AnswerModel.SuveryAnswer innerAnswer : suveryAnswer) {
+                        if (innerAnswer.getQuestionId().equals("hid_284") && !TextUtils.isEmpty(answer.getAnswer())) {
+                            if (!innerAnswer.isDob_()) {
+                                innerAnswer.setDob_(true);
+                                personModel.setDob(innerAnswer.getAnswer());
+                                break;
+                            }
+                        }
+                    }
+
+
+                    for (AnswerModel.SuveryAnswer innerAnswer : suveryAnswer) {
+                        if (innerAnswer.getQuestionId().equals("hid_280") && !TextUtils.isEmpty(answer.getAnswer())) {
+                            if (!innerAnswer.isLoadedSex()) {
+                                innerAnswer.setLoadedSex(true);
+                                personModel.setSex(innerAnswer.getAnswer());
+                                break;
+                            }
+                        }
+                    }
+
+
+                    if (!personModels.contains(personModel)) {
+                        personModels.add(personModel);
+                        areaModel.setMemberRtfModels(personModels);
+                    }
+                }
+
+
+            }
+
+
             if (answer.getQuestionId().equals("hid_140") && !TextUtils.isEmpty(answer.getAnswer())) {
             } else if (answer.getQuestionId().equals("hid_2") || answer.getQuestionId().equals("hid_3") || answer.getQuestionId().equals("hid_4") || answer.getQuestionId().equals("hid_5") && !TextUtils.isEmpty(answer.getAnswer())) {
                 areaModel.setBlock(answer.getAnswer());
@@ -578,9 +767,9 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             } else if (answer.getQuestionId().equals("hid_176") && !TextUtils.isEmpty(answer.getAnswer())) {
                 //loopTwo++;
             } else if (answer.getQuestionId().equals("hid_244") && !TextUtils.isEmpty(answer.getAnswer())) {
-                loopThree++;
+//                loopThree++;
             } else if (answer.getQuestionId().equals("hid_280") && !TextUtils.isEmpty(answer.getAnswer())) {
-                loopFour++;
+                //     loopFour++;
             } else if (answer.getQuestionId().equals("hid_328") && !TextUtils.isEmpty(answer.getAnswer())) {
                 loopFive++;
             }
@@ -650,10 +839,18 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
 
     private void SyncData() throws Exception {
+
+
+        if (areaModel != null && personModels != null) {
+            areaModel.setMemberRtfModels(personModels);
+            answerModel.setAreaModel(areaModel);
+            String string = new Gson().toJson(areaModel);
+            Log.d("AREAMODEL", string);
+        }
+
         if (status != null) {
             answerModel.setStatus(status);
         }
-
 
         answerModel.setGenerated_survey(key);
         final String data = new Gson().toJson(answerModel);
@@ -672,6 +869,8 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     @Override
                     public void onFailure(Call call, Throwable t) {
                         Log.d("", "onResponse: Error");
+
+
                         SnappyNoSQL.getInstance().saveOfflineSurvey(data);
                         hideBar();
 
@@ -721,9 +920,17 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
     @Override
     public void getNextPosition(int position, QuestionsModel questionsModel, String answer, boolean isNew, Object object, boolean localIsRepeater) {
         try {
+
+            Log.d("Answer", answer);
+            Log.d("Position", "" + position);
+
             order = position;
             Log.d("question Id ==", questionsModel.getQuestionId());
             int next = executeQuestionId(position);
+            Log.d("Executed Position", "" + next);
+
+//            positionsMap.put(currantPosition,new Positions(nextPosition,lastPosition1));
+//            System.out.println("C = "+currantPosition+" L ="+lastPosition1+" N ="+next);
 
 
             if (questionsModel.getQuestionId().equals("hid_160") || questionsModel.getQuestionId().equals("hid_164")) {
@@ -736,6 +943,22 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     loopTwo = getPersionsList().get(FragmentControler.child).size() + 1;
                 }
             }
+
+
+            if (questionsModel.getQuestionId().equals("hid_268")) {
+                if (answer.equals("1")) {
+                    executeAnswers();
+                    loopThree = getPersionsList().get(FragmentControler.loopThreesPerson).size() + 1;
+                }
+            }
+            if (questionsModel.getQuestionId().equals("hid_300")) {
+                if (answer.equals("1")) {
+                    executeAnswers();
+                    loopFour = getPersionsList().get(FragmentControler.loopFourPerson).size() + 1;
+                }
+            }
+
+
             int childSize = 0;
 
             List<PersonModel> personModels = getPersionsList().get(child);
@@ -744,6 +967,21 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     childSize++;
                 }
             }
+
+
+            if (questionsModel.getQuestionId().equals("hid_148")) {
+                try {
+                    int age = Integer.parseInt(answer);
+                    if (age > 55) {
+                        nextPosition = executeQuestionId(160);
+
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
 
             if (questionsModel.getQuestionId().equals("hid_276")) {
                 if (answer.equals("1")) {
@@ -770,26 +1008,6 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     }
                 }
             }
-
-//            if (!executed) {
-//                if (childSize >= 2) {
-//                    executed = true;
-//                    if (questionsModel.getQuestionId().equals("hid_328")) {
-//                        nextPosition = executeQuestionId(308);
-//                        showDialogMessage("Testing");
-//                        for (QuestionsModel.Answer x : questionsModel.getAnswers())
-//                            x.setOptionNext(308);
-//
-//                    }
-//                } else if (executed) {
-//                    if (questionsModel.getQuestionId().equals("hid_328")) {
-//                        nextPosition = executeQuestionId(332);
-//                        for (QuestionsModel.Answer x : questionsModel.getAnswers())
-//                            x.setOptionNext(332);
-//
-//                    }
-//                }
-//            }
 
             fetchViewData(nextPosition, answer, questionsModel);
 
@@ -819,7 +1037,7 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
             if (isNew)
                 runtime(answer, questionsModel);
         } catch (Exception e) {
-                e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -839,16 +1057,21 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
 
     private void runtime(String ans, QuestionsModel questionsModel) throws Exception {
         //hid_148 //
-        if (ans.contains("{")) {
-            HashMap<String, String> hashMap = new Gson().fromJson(ans, HashMap.class);
-            if (hashMap.containsKey("text")) {
-                ans = hashMap.get("text");
+
+        try {
+            if (ans.contains("{")) {
+                HashMap<String, String> hashMap = new Gson().fromJson(ans, HashMap.class);
+                if (hashMap.containsKey("text")) {
+                    ans = hashMap.get("text");
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         if (questionsModel.getQuestionId().equals("hid_180")) {
             int answer = Integer.parseInt(ans);
-            if (answer >= 12) {
+            if (answer >= 12 && answer <= 55) {
                 List<AnswerModel.SuveryAnswer> reverseList = answerModel.getSuveryAnswers();
                 //Collections.reverse(reverseList);
                 for (AnswerModel.SuveryAnswer suveryAnswer : reverseList) {
@@ -865,15 +1088,29 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                 nextPosition = executeQuestionId(188);
             }
         } else if (questionsModel.getQuestionId().equals("hid_284")) {
+            boolean zero = false;
+            if (ans.contains("{")) {
+                HashMap<Integer, String> selectMap = new Gson().fromJson(ans, HashMap.class);
+                if (selectMap.containsKey("1")) {
+                    ans = selectMap.get("1");
+                }
+                if (selectMap.containsKey("0")) {
+                    ans = selectMap.get("0");
+                    zero = true;
+                }
+            }
+
+
             int answer = Integer.parseInt(ans);
             if (answer == 99) {
                 nextPosition = executeQuestionId(296);
-            } else if (answer >= 12 || answer == 88) {
+            } else if (((answer >= 12 && answer <= 55) || answer == 88) && !zero) {
                 if (MainYear) {
                     Stack<AnswerModel.SuveryAnswer> reverseList = answerModel.getSuveryAnswers();
-                    Collections.reverse(reverseList);
+//                    Collections.reverse(reverseList);
                     for (AnswerModel.SuveryAnswer suveryAnswer : reverseList) {
                         if (suveryAnswer.getQuestionId().equals("hid_280")) {
+                            Log.d("MAPAnswer", suveryAnswer.getAnswer());
                             if (suveryAnswer.getAnswer().equals("1")) {
                                 nextPosition = executeQuestionId(296);
                             } else {
@@ -891,8 +1128,33 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
         } else if (questionsModel.getQuestionId().equals("iid_468")) {
 
             try {
+
+                boolean isYear = false;
+                if (ans.contains("{")) {
+                    HashMap<Integer, String> selectMap = new Gson().fromJson(ans, HashMap.class);
+                    if (selectMap.containsKey("1")) {
+                        ans = selectMap.get("1");
+                        DynamicFragment.spinners.get(0).setSelection(0);
+                        DynamicFragment.spinners.get(2).setSelection(0);
+                    }
+                    if (selectMap.containsKey("0")) {
+                        ans = selectMap.get("0");
+                        DynamicFragment.spinners.get(1).setSelection(0);
+                        DynamicFragment.spinners.get(2).setSelection(0);
+
+                    }
+                    if (selectMap.containsKey("2")) {
+                        ans = selectMap.get("2");
+                        DynamicFragment.spinners.get(0).setSelection(0);
+                        DynamicFragment.spinners.get(1).setSelection(0);
+
+                        isYear = true;
+                    }
+                }
+
+
                 int answer = Integer.parseInt(ans);
-                if (MainYear) {
+                if (isYear) {
                     if (answer > 5) {
                         nextPosition = executeQuestionId(476);
                     }
@@ -959,32 +1221,27 @@ public class FragmentControler extends BaseActivity implements View.OnClickListe
                     break;
                 }
             }
-        }
-
-
-
-
-
-
-        /*else if (questionsModel.getQuestionId().equals("hid_248")) {
+        } else if (questionsModel.getQuestionId().equals("hid_248")) {
+            Log.d("answer", ans);
             int answer = Integer.parseInt(ans);
-            if (answer >= 18) {
+            if (answer >= 18 && answer <= 55) {
                 for (AnswerModel.SuveryAnswer suveryAnswer : answerModel.getSuveryAnswers()) {
-                    if (suveryAnswer.getQuestionId().equals("hid_176")) {
+                    if (suveryAnswer.getQuestionId().equals("hid_244")) {
                         if (suveryAnswer.getAnswer().equals("1")) {
-                            nextPosition = 188;
+                            Log.d("if", ans);
+                            nextPosition = executeQuestionId(264);
                         } else {
-                            nextPosition = 184;
+                            Log.d("else", ans);
+                            nextPosition = executeQuestionId(256);
                         }
                         break;
                     }
                 }
             } else {
-                nextPosition = 184;
+                Log.d(" outer else", ans);
+                nextPosition = executeQuestionId(264);
             }
-        }*/
-
-        else if (questionsModel.getQuestionId().equals("iid_108")) {
+        } else if (questionsModel.getQuestionId().equals("iid_108")) {
             int answer = Integer.parseInt(ans);
             if (answer < 18) {
                 nextPosition = 0;

@@ -64,9 +64,10 @@ public class ResumeActivity extends AppCompatActivity {
             ListView listView = (ListView) findViewById(R.id.datalist);
 
             problemSolver();
+            List<AreaModel> tempAreaModels = new ArrayList<>(areaModels);
             for (String key : sOneKeys) {
-                for (AreaModel areaModel : areaModels) {
-                    if (areaModel.get_id().contains(key)){
+                for (AreaModel areaModel : tempAreaModels) {
+                    if (areaModel.get_id().contains(key)) {
                         areaModels.remove(areaModel);
                     }
                 }
@@ -147,19 +148,20 @@ public class ResumeActivity extends AppCompatActivity {
 
                 List<PersonModel> rtfModels = areaModel.get(position).getMemberRtfModels();
                 for (PersonModel users : rtfModels) {
-                    if (!one.getText().equals(users.getName()) && !TextUtils.isEmpty(users.getName())) {
-                        if (count == 0) {
-                            linearLayout1.setVisibility(View.VISIBLE);
-                            one.setText(users.getName());
-                            one.setTag(areaModel.get(position).get_id().replace("ONE", "TWO"));
+                    if (users.is_seleted())
+                        if (!one.getText().equals(users.getName()) && !TextUtils.isEmpty(users.getName())) {
+                            if (count == 0) {
+                                linearLayout1.setVisibility(View.VISIBLE);
+                                one.setText(users.getName());
+                                one.setTag(areaModel.get(position).get_id().replace("ONE", "TWO"));
 
-                        } else {
-                            linearLayout2.setVisibility(View.VISIBLE);
-                            two.setText(users.getName());
-                            two.setTag(areaModel.get(position).get_id().replace("ONE", "TWO"));
+                            } else {
+                                linearLayout2.setVisibility(View.VISIBLE);
+                                two.setText(users.getName());
+                                two.setTag(areaModel.get(position).get_id().replace("ONE", "TWO"));
+                            }
+                            count++;
                         }
-                        count++;
-                    }
                     if (count == 2) {
                         break;
                     }
